@@ -1,0 +1,27 @@
+:root {
+  color-scheme: light dark;
+  font: 16px/1.4 system-ui, 'Segoe UI', Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--tg-theme-bg-color, #16171d);
+  color: var(--tg-theme-text-color, #f3f4f6);
+}
+
+#root {
+  min-height: 100svh;
+}
+
+h1,
+h2 {
+  margin: 0 0 8px;
+}
+
+p {
+  margin: 0;
+}
