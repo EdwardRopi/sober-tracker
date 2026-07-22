@@ -5,13 +5,13 @@ CREATE TABLE IF NOT EXISTS users (
   first_name TEXT,
   username TEXT,
   display_name TEXT,  -- имя, которое юзер видит у друзей — можно поменять, иначе = first_name
-  avatar_url TEXT,     -- фото профиля из Telegram (photo_url из initData)
   created_at TIMESTAMP DEFAULT NOW()
 );
 
--- На случай если таблица уже существовала до добавления этих колонок
+-- На случай если таблица уже существовала до добавления этой колонки
 ALTER TABLE users ADD COLUMN IF NOT EXISTS display_name TEXT;
-ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+-- Аватарка теперь не хранится — отдаётся живьём через /avatar/:userId (Bot API), см. src/routes/avatar.js
+ALTER TABLE users DROP COLUMN IF EXISTS avatar_url;
 
 -- Привычки, которые трекает юзер (алкоголь, курение и т.д.)
 CREATE TABLE IF NOT EXISTS habits (

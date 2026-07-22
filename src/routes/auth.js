@@ -5,15 +5,15 @@ const pool = require('../db/pool');
 // Вызывается один раз при открытии мини-аппа — сохраняем юзера, если его ещё нет.
 // display_name не трогаем при повторном входе — юзер мог поменять его вручную.
 router.post('/init', async (req, res) => {
-  const { id, first_name, username, photo_url } = req.telegramUser;
+  const { id, first_name, username } = req.telegramUser;
 
   try {
     const result = await pool.query(
-      `INSERT INTO users (telegram_id, first_name, username, display_name, avatar_url)
-       VALUES ($1, $2, $3, $2, $4)
-       ON CONFLICT (telegram_id) DO UPDATE SET first_name = $2, username = $3, avatar_url = $4
+      `INSERT INTO users (telegram_id, first_name, username, display_name)
+       VALUES ($1, $2, $3, $2)
+       ON CONFLICT (telegram_id) DO UPDATE SET first_name = $2, username = $3
        RETURNING *`,
-      [id, first_name, username, photo_url || null]
+      [id, first_name, username]
     );
     res.json(result.rows[0]);
   } catch (err) {

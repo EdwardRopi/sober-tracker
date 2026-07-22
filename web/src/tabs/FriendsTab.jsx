@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { api } from '../api';
+import { api, API_URL } from '../api';
 
 function ProfileCard({ user, setUser }) {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(user.display_name || user.first_name || '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [avatarFailed, setAvatarFailed] = useState(false);
 
   async function handleSave(e) {
     e.preventDefault();
@@ -26,8 +27,13 @@ function ProfileCard({ user, setUser }) {
   return (
     <div className="card profile-card">
       <div className="profile-row">
-        {user.avatar_url ? (
-          <img className="avatar" src={user.avatar_url} alt="" />
+        {!avatarFailed ? (
+          <img
+            className="avatar"
+            src={`${API_URL}/avatar/${user.id}`}
+            alt=""
+            onError={() => setAvatarFailed(true)}
+          />
         ) : (
           <div className="avatar avatar-placeholder">{(user.display_name || '?')[0]?.toUpperCase()}</div>
         )}
