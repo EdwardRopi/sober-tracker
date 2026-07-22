@@ -9,9 +9,9 @@ router.post('/init', async (req, res) => {
 
   try {
     const result = await pool.query(
-      `INSERT INTO users (telegram_id, first_name, username, display_name)
-       VALUES ($1, $2, $3, $2)
-       ON CONFLICT (telegram_id) DO UPDATE SET first_name = $2, username = $3
+      `INSERT INTO users (telegram_id, first_name, username, display_name, last_seen_at)
+       VALUES ($1, $2, $3, $2, NOW())
+       ON CONFLICT (telegram_id) DO UPDATE SET first_name = $2, username = $3, last_seen_at = NOW()
        RETURNING *`,
       [id, first_name, username]
     );
