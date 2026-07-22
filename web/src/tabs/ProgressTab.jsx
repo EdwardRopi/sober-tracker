@@ -109,14 +109,16 @@ function HabitForm({ onCreated }) {
   );
 }
 
-const UNITS = [
-  ['years', 'лет'],
-  ['months', 'мес'],
-  ['days', 'дней'],
-  ['hours', 'ч'],
-  ['minutes', 'мин'],
-  ['seconds', 'сек'],
-];
+const UNIT_ORDER = ['years', 'months', 'days', 'hours', 'minutes', 'seconds'];
+const UNIT_LABELS = {
+  years: 'лет',
+  months: 'месяцев',
+  days: 'дней',
+  hours: 'часов',
+  minutes: 'минут',
+  seconds: 'секунд',
+};
+const CHIP_LABELS = { years: 'лет', months: 'мес', days: 'дней', hours: 'ч', minutes: 'мин', seconds: 'сек' };
 
 function Counter({ habit, onRelapse }) {
   const [breakdown, setBreakdown] = useState(() => breakdownSince(habit.sober_since));
@@ -139,15 +141,34 @@ function Counter({ habit, onRelapse }) {
     }
   }
 
+  let primaryIdx = UNIT_ORDER.findIndex((u) => breakdown[u] > 0);
+  if (primaryIdx === -1) primaryIdx = UNIT_ORDER.length - 1;
+  const primaryUnit = UNIT_ORDER[primaryIdx];
+  const secondaryUnit = primaryIdx < UNIT_ORDER.length - 1 ? UNIT_ORDER[primaryIdx + 1] : null;
+  const restUnits = UNIT_ORDER.filter((u) => u !== primaryUnit && u !== secondaryUnit);
+
   return (
     <div className="counter">
       <p className="counter-label">Я чист(а) уже</p>
 
+      <div className="bubbles">
+        <div className="bubble bubble-primary">
+          <span className="bubble-value">{breakdown[primaryUnit]}</span>
+          <span className="bubble-unit">{UNIT_LABELS[primaryUnit]}</span>
+        </div>
+        {secondaryUnit && (
+          <div className="bubble bubble-secondary">
+            <span className="bubble-value">{breakdown[secondaryUnit]}</span>
+            <span className="bubble-unit">{UNIT_LABELS[secondaryUnit]}</span>
+          </div>
+        )}
+      </div>
+
       <div className="counter-grid">
-        {UNITS.map(([key, label]) => (
-          <div className="counter-cell" key={key}>
-            <span className="counter-value">{breakdown[key]}</span>
-            <span className="counter-unit">{label}</span>
+        {restUnits.map((unit) => (
+          <div className="counter-cell" key={unit}>
+            <span className="counter-value">{breakdown[unit]}</span>
+            <span className="counter-unit">{CHIP_LABELS[unit]}</span>
           </div>
         ))}
       </div>

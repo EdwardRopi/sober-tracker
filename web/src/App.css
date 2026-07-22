@@ -133,10 +133,72 @@ button:disabled {
   color: var(--text-dim);
 }
 
+.bubbles {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  height: 230px;
+  margin-bottom: 8px;
+}
+
+.bubble {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--bubble-bg);
+  box-shadow: var(--bubble-glow);
+  color: var(--bubble-text);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.bubble-primary {
+  width: 210px;
+  height: 210px;
+  left: 50%;
+  top: 0;
+  transform: translateX(-68%);
+  z-index: 1;
+}
+
+.bubble-secondary {
+  width: 140px;
+  height: 140px;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-12%);
+  z-index: 2;
+}
+
+.bubble-value {
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.bubble-secondary .bubble-value {
+  font-size: 28px;
+}
+
+.bubble-unit {
+  font-size: 14px;
+  opacity: 0.7;
+  margin-top: 4px;
+}
+
+.bubble-secondary .bubble-unit {
+  font-size: 12px;
+}
+
 .counter-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
   width: 100%;
   max-width: 340px;
 }
@@ -149,18 +211,18 @@ button:disabled {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 14px;
-  padding: 14px 4px;
+  padding: 10px 2px;
 }
 
 .counter-value {
-  font-size: 28px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--accent);
   font-variant-numeric: tabular-nums;
 }
 
 .counter-unit {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-dim);
 }
 

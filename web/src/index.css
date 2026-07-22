@@ -1,13 +1,16 @@
 :root {
-  --bg: #0e0f13;
-  --surface: #17181e;
-  --surface-2: #1e2028;
-  --border: #2a2c36;
-  --text: #f2f2f5;
-  --text-dim: #9295a3;
-  --accent: #34d399;
-  --accent-dim: rgba(52, 211, 153, 0.15);
+  --bg: #121214;
+  --surface: #1c1c1f;
+  --surface-2: #242429;
+  --border: #2e2e34;
+  --text: #f5f5f7;
+  --text-dim: #8e8e93;
+  --accent: #8b8fe8;
+  --accent-dim: rgba(139, 143, 232, 0.15);
   --danger: #ef4444;
+  --bubble-bg: radial-gradient(circle at 30% 30%, #ffffff, #dfeaff);
+  --bubble-text: #16213a;
+  --bubble-glow: 0 0 45px rgba(139, 197, 255, 0.35);
   color-scheme: dark;
   font: 16px/1.4 system-ui, 'Segoe UI', Roboto, sans-serif;
 }
