@@ -28,4 +28,6 @@ export const api = {
   getTodayPromise: () => request('/api/journal/promise-today'),
   addJournalEntry: (entryType, text) =>
     request('/api/journal', { method: 'POST', body: JSON.stringify({ entry_type: entryType, text }) }),
+  updateProfile: (displayName) =>
+    request('/api/auth/profile', { method: 'PATCH', body: JSON.stringify({ display_name: displayName }) }),
 };

@@ -291,7 +291,94 @@ button:disabled {
   color: var(--accent);
 }
 
-/* Friends stub */
+/* Friends / profile */
+
+.friends-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 360px;
+}
+
+.profile-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-2);
+  color: var(--text-dim);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+}
+
+.profile-name {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent);
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.profile-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.profile-edit-form input {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 15px;
+}
+
+.profile-edit-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.profile-edit-buttons button {
+  padding: 8px 14px;
+  font-size: 13px;
+  border-radius: 8px;
+}
+
+.profile-edit-buttons button:not(.primary) {
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+}
 
 .stub {
   text-align: center;
@@ -300,6 +387,7 @@ button:disabled {
   flex-direction: column;
   align-items: center;
   gap: 10px;
+  align-self: center;
 }
 
 .stub-icon {

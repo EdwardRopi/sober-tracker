@@ -1,6 +1,70 @@
-export default function FriendsTab() {
+import { useState } from 'react';
+import { api } from '../api';
+
+function ProfileCard({ user, setUser }) {
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState(user.display_name || user.first_name || '');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  async function handleSave(e) {
+    e.preventDefault();
+    if (!name.trim()) return;
+    setBusy(true);
+    setError('');
+    try {
+      const updated = await api.updateProfile(name.trim());
+      setUser(updated);
+      setEditing(false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
-    <div className="tab-screen">
+    <div className="card profile-card">
+      <div className="profile-row">
+        {user.avatar_url ? (
+          <img className="avatar" src={user.avatar_url} alt="" />
+        ) : (
+          <div className="avatar avatar-placeholder">{(user.display_name || '?')[0]?.toUpperCase()}</div>
+        )}
+
+        {editing ? (
+          <form className="profile-edit-form" onSubmit={handleSave}>
+            <input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} autoFocus />
+            <div className="profile-edit-buttons">
+              <button type="submit" className="primary" disabled={busy || !name.trim()}>
+                Сохранить
+              </button>
+              <button type="button" onClick={() => setEditing(false)} disabled={busy}>
+                Отмена
+              </button>
+            </div>
+          </form>
+        ) : (
+          <div className="profile-info">
+            <p className="profile-name">{user.display_name || user.first_name}</p>
+            <button type="button" className="link-button" onClick={() => setEditing(true)}>
+              Изменить имя
+            </button>
+          </div>
+        )}
+      </div>
+
+      {error && <p className="error">{error}</p>}
+      <p className="hint">Аватарка берётся из твоего профиля в Telegram — поменяй её там, и она обновится и здесь.</p>
+    </div>
+  );
+}
+
+export default function FriendsTab({ user, setUser }) {
+  return (
+    <div className="tab-screen friends-tab">
+      {user && <ProfileCard user={user} setUser={setUser} />}
+
       <div className="stub">
         <p className="stub-icon">👥</p>
         <h2>Скоро здесь</h2>

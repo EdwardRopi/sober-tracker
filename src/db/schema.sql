@@ -4,8 +4,14 @@ CREATE TABLE IF NOT EXISTS users (
   telegram_id BIGINT UNIQUE NOT NULL,
   first_name TEXT,
   username TEXT,
+  display_name TEXT,  -- имя, которое юзер видит у друзей — можно поменять, иначе = first_name
+  avatar_url TEXT,     -- фото профиля из Telegram (photo_url из initData)
   created_at TIMESTAMP DEFAULT NOW()
 );
+
+-- На случай если таблица уже существовала до добавления этих колонок
+ALTER TABLE users ADD COLUMN IF NOT EXISTS display_name TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url TEXT;
 
 -- Привычки, которые трекает юзер (алкоголь, курение и т.д.)
 CREATE TABLE IF NOT EXISTS habits (

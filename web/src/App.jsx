@@ -10,6 +10,7 @@ import './App.css';
 export default function App() {
   const [tab, setTab] = useState('progress');
   const [habit, setHabit] = useState(null);
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -19,7 +20,8 @@ export default function App() {
 
     async function load() {
       try {
-        await api.initAuth();
+        const profile = await api.initAuth();
+        setUser(profile);
         const habits = await api.getHabits();
         setHabit(habits[0] || null);
       } catch (err) {
@@ -47,7 +49,7 @@ export default function App() {
       <main className="app-content">
         {tab === 'progress' && <ProgressTab habit={habit} setHabit={setHabit} />}
         {tab === 'today' && <TodayTab />}
-        {tab === 'friends' && <FriendsTab />}
+        {tab === 'friends' && <FriendsTab user={user} setUser={setUser} />}
         {tab === 'motivation' && <MotivationTab />}
       </main>
       <BottomNav active={tab} onChange={setTab} />
