@@ -3,7 +3,8 @@ import { api } from '../api';
 
 const HABIT_TYPES = [
   { value: 'alcohol', label: 'Алкоголь' },
-  { value: 'smoking', label: 'Курение' },
+  { value: 'drugs', label: 'Наркотики' },
+  { value: 'nicotine', label: 'Никотин' },
   { value: 'social_media', label: 'Соцсети' },
 ];
 
@@ -120,10 +121,13 @@ const UNIT_LABELS = {
 };
 const CHIP_LABELS = { years: 'лет', months: 'мес', days: 'дней', hours: 'ч', minutes: 'мин', seconds: 'сек' };
 
-function Counter({ habit, onRelapse }) {
+function Counter({ habit, onRelapse, onUpdateHabit }) {
   const [breakdown, setBreakdown] = useState(() => breakdownSince(habit.sober_since));
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [editingDate, setEditingDate] = useState(false);
+  const [dateDraft, setDateDraft] = useState(() => new Date(habit.started_at).toISOString().slice(0, 16));
+  const [savingDate, setSavingDate] = useState(false);
 
   useEffect(() => {
     const id = setInterval(() => setBreakdown(breakdownSince(habit.sober_since)), 1000);
@@ -141,6 +145,18 @@ function Counter({ habit, onRelapse }) {
     }
   }
 
+  async function handleDateSave(e) {
+    e.preventDefault();
+    setSavingDate(true);
+    try {
+      const updated = await api.updateHabit(habit.id, { started_at: new Date(dateDraft).toISOString() });
+      onUpdateHabit(updated);
+      setEditingDate(false);
+    } finally {
+      setSavingDate(false);
+    }
+  }
+
   let primaryIdx = UNIT_ORDER.findIndex((u) => breakdown[u] > 0);
   if (primaryIdx === -1) primaryIdx = UNIT_ORDER.length - 1;
   const primaryUnit = UNIT_ORDER[primaryIdx];
@@ -149,7 +165,31 @@ function Counter({ habit, onRelapse }) {
 
   return (
     <div className="counter">
-      <p className="counter-label">Я чист(а) уже</p>
+      <div className="counter-header">
+        <p className="counter-label">Я чист(а) уже</p>
+        <button
+          type="button"
+          className="icon-button"
+          onClick={() => setEditingDate((v) => !v)}
+          title="Изменить дату начала"
+        >
+          ✏️
+        </button>
+      </div>
+
+      {editingDate && (
+        <form className="date-edit-form" onSubmit={handleDateSave}>
+          <input type="datetime-local" value={dateDraft} onChange={(e) => setDateDraft(e.target.value)} />
+          <div className="confirm-buttons">
+            <button type="submit" className="primary" disabled={savingDate}>
+              {savingDate ? 'Сохраняю...' : 'Сохранить'}
+            </button>
+            <button type="button" onClick={() => setEditingDate(false)} disabled={savingDate}>
+              Отмена
+            </button>
+          </div>
+        </form>
+      )}
 
       <div className="bubbles">
         <div className="bubble bubble-primary">
@@ -197,5 +237,13 @@ function Counter({ habit, onRelapse }) {
 }
 
 export default function ProgressTab({ habit, setHabit }) {
-  return <div className="tab-screen">{habit ? <Counter habit={habit} onRelapse={setHabit} /> : <HabitForm onCreated={setHabit} />}</div>;
+  return (
+    <div className="tab-screen">
+      {habit ? (
+        <Counter habit={habit} onRelapse={setHabit} onUpdateHabit={setHabit} />
+      ) : (
+        <HabitForm onCreated={setHabit} />
+      )}
+    </div>
+  );
 }

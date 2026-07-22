@@ -110,7 +110,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// PATCH /api/habits/:id — обновить причину отказа и дневную стоимость привычки
+// PATCH /api/habits/:id — обновить причину отказа, дневную стоимость и/или дату начала трезвости
 router.patch('/:id', async (req, res) => {
   try {
     if (!/^\d+$/.test(req.params.id)) {
@@ -120,16 +120,17 @@ router.patch('/:id', async (req, res) => {
     const userId = await getUserId(req.telegramUser.id);
     if (!userId) return res.status(404).json({ error: 'Юзер не найден' });
 
-    const { daily_cost, reason_text, reason_photo_url } = req.body;
+    const { daily_cost, reason_text, reason_photo_url, started_at } = req.body;
 
     const { rows } = await pool.query(
       `UPDATE habits
        SET daily_cost = COALESCE($1, daily_cost),
            reason_text = COALESCE($2, reason_text),
-           reason_photo_url = COALESCE($3, reason_photo_url)
-       WHERE id = $4 AND user_id = $5
+           reason_photo_url = COALESCE($3, reason_photo_url),
+           started_at = COALESCE($4, started_at)
+       WHERE id = $5 AND user_id = $6
        RETURNING *`,
-      [daily_cost, reason_text, reason_photo_url, req.params.id, userId]
+      [daily_cost, reason_text, reason_photo_url, started_at, req.params.id, userId]
     );
 
     if (!rows[0]) return res.status(404).json({ error: 'Привычка не найдена' });
