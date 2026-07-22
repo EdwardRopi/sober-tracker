@@ -696,6 +696,25 @@ button:disabled {
   gap: 6px;
 }
 
+.support-button {
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(4px);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 0 14px var(--accent-glow);
+  transition: transform 0.15s, box-shadow 0.2s;
+}
+
+.support-button:active {
+  transform: scale(0.95);
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
 .profile-name {
   font-size: 17px;
   font-weight: 600;

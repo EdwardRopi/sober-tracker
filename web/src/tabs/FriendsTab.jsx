@@ -166,7 +166,7 @@ function ProfileCard({ user, setUser }) {
                 {user.display_name || user.first_name}
                 {user.is_premium && <span className="premium-badge">⭐ Premium</span>}
               </p>
-              <button type="button" className="link-button" onClick={() => setDonateOpen(true)}>
+              <button type="button" className="support-button" onClick={() => setDonateOpen(true)}>
                 Поддержать
               </button>
             </div>
