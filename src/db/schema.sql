@@ -26,3 +26,12 @@ CREATE TABLE IF NOT EXISTS relapses (
   relapsed_at TIMESTAMP DEFAULT NOW(),
   note TEXT
 );
+
+-- Вкладка "Сегодня": обещания самому себе и "мозговой слив" (снятие напряжения)
+CREATE TABLE IF NOT EXISTS journal_entries (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  entry_type TEXT NOT NULL,  -- 'promise' или 'dump'
+  text TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);

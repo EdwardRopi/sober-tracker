@@ -25,4 +25,7 @@ export const api = {
   createHabit: (habit) => request('/api/habits', { method: 'POST', body: JSON.stringify(habit) }),
   relapse: (habitId, note) =>
     request(`/api/habits/${habitId}/relapse`, { method: 'POST', body: JSON.stringify({ note }) }),
+  getTodayPromise: () => request('/api/journal/promise-today'),
+  addJournalEntry: (entryType, text) =>
+    request('/api/journal', { method: 'POST', body: JSON.stringify({ entry_type: entryType, text }) }),
 };

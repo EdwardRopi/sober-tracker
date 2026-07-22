@@ -1,16 +1,26 @@
 :root {
-  color-scheme: light dark;
+  --bg: #0e0f13;
+  --surface: #17181e;
+  --surface-2: #1e2028;
+  --border: #2a2c36;
+  --text: #f2f2f5;
+  --text-dim: #9295a3;
+  --accent: #34d399;
+  --accent-dim: rgba(52, 211, 153, 0.15);
+  --danger: #ef4444;
+  color-scheme: dark;
   font: 16px/1.4 system-ui, 'Segoe UI', Roboto, sans-serif;
 }
 
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
   margin: 0;
-  background: var(--tg-theme-bg-color, #16171d);
-  color: var(--tg-theme-text-color, #f3f4f6);
+  background: var(--tg-theme-bg-color, var(--bg));
+  color: var(--tg-theme-text-color, var(--text));
 }
 
 #root {

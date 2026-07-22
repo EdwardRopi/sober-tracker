@@ -4,6 +4,7 @@ const cors = require('cors');
 const { authMiddleware } = require('./middleware/auth');
 const authRoutes = require('./routes/auth');
 const habitsRoutes = require('./routes/habits');
+const journalRoutes = require('./routes/journal');
 require('./bot/bot');
 const { scheduleCheckins } = require('./bot/checkin');
 
@@ -18,6 +19,7 @@ app.get('/health', (req, res) => res.json({ status: 'ok' }));
 app.use('/api', authMiddleware);
 app.use('/api/auth', authRoutes);
 app.use('/api/habits', habitsRoutes);
+app.use('/api/journal', journalRoutes);
 
 scheduleCheckins();
 
