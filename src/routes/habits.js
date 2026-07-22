@@ -135,6 +135,12 @@ router.patch('/:id', async (req, res) => {
 
     if (!rows[0]) return res.status(404).json({ error: 'Привычка не найдена' });
 
+    // Ручная правка даты старта — это осознанный сброс счётчика, поэтому старые
+    // срывы больше не должны его перекрывать
+    if (started_at) {
+      await pool.query('DELETE FROM relapses WHERE habit_id = $1', [rows[0].id]);
+    }
+
     const { rows: relapses } = await pool.query(
       'SELECT relapsed_at FROM relapses WHERE habit_id = $1 ORDER BY relapsed_at DESC LIMIT 1',
       [rows[0].id]

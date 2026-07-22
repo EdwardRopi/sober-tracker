@@ -179,6 +179,7 @@ function Counter({ habit, onRelapse, onUpdateHabit }) {
 
       {editingDate && (
         <form className="date-edit-form" onSubmit={handleDateSave}>
+          <p className="hint">Это сбросит счётчик заново от новой даты и очистит историю прошлых срывов.</p>
           <input type="datetime-local" value={dateDraft} onChange={(e) => setDateDraft(e.target.value)} />
           <div className="confirm-buttons">
             <button type="submit" className="primary" disabled={savingDate}>
