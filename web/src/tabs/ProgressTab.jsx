@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { api } from '../api';
 import { haptic } from '../haptic';
+import { BOT_USERNAME } from '../constants';
 
 const HABIT_TYPES = [
   { value: 'alcohol', label: 'Алкоголь' },
@@ -13,6 +14,14 @@ const HABIT_TYPES = [
 
 function habitTypeLabel(value) {
   return HABIT_TYPES.find((t) => t.value === value)?.label || value;
+}
+
+function pluralDays(n) {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return 'день';
+  if ([2, 3, 4].includes(mod10) && ![12, 13, 14].includes(mod100)) return 'дня';
+  return 'дней';
 }
 
 function breakdownSince(soberSince) {
@@ -199,7 +208,7 @@ function useNewlyEarnedBadge(badges) {
   return [celebrate, () => setCelebrate(null)];
 }
 
-function Counter({ habit, onRelapse, onUpdateHabit }) {
+function Counter({ habit, onRelapse, onUpdateHabit, user }) {
   const [breakdown, setBreakdown] = useState(() => breakdownSince(habit.sober_since));
   const [confirming, setConfirming] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -251,6 +260,21 @@ function Counter({ habit, onRelapse, onUpdateHabit }) {
       setEditingType(false);
     } finally {
       setSavingType(false);
+    }
+  }
+
+  function handleShare() {
+    haptic('light');
+    const days = habit.sober_days;
+    const moneyLine = habit.daily_cost > 0 ? ` Уже сэкономил(а) ${habit.money_saved} ₽.` : '';
+    const text = `🔥 Я уже ${days} ${pluralDays(days)} держусь без «${habitTypeLabel(habit.habit_type).toLowerCase()}»!${moneyLine} Присоединяйся, будем держаться вместе 💪`;
+    const deepLink = user ? `https://t.me/${BOT_USERNAME}?start=inv${user.id}` : `https://t.me/${BOT_USERNAME}`;
+    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(deepLink)}&text=${encodeURIComponent(text)}`;
+
+    if (window.Telegram?.WebApp?.openTelegramLink) {
+      window.Telegram.WebApp.openTelegramLink(shareUrl);
+    } else {
+      window.open(shareUrl, '_blank');
     }
   }
 
@@ -347,6 +371,10 @@ function Counter({ habit, onRelapse, onUpdateHabit }) {
 
       <BadgeStrip badges={habit.badges} />
 
+      <button type="button" className="secondary" onClick={handleShare}>
+        Поделиться прогрессом
+      </button>
+
       {confirming ? (
         <div className="confirm">
           <p>Точно записать срыв?</p>
@@ -370,11 +398,11 @@ function Counter({ habit, onRelapse, onUpdateHabit }) {
   );
 }
 
-export default function ProgressTab({ habit, setHabit }) {
+export default function ProgressTab({ habit, setHabit, user }) {
   return (
     <div className="tab-screen">
       {habit ? (
-        <Counter habit={habit} onRelapse={setHabit} onUpdateHabit={setHabit} />
+        <Counter habit={habit} onRelapse={setHabit} onUpdateHabit={setHabit} user={user} />
       ) : (
         <HabitForm onCreated={setHabit} />
       )}

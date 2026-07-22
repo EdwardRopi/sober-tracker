@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react';
 import { api, API_URL } from '../api';
 import { haptic } from '../haptic';
 import Spinner from '../Spinner';
-
-const BOT_USERNAME = 'i_am_sbr_bot';
+import { BOT_USERNAME } from '../constants';
 
 function ProfileCard({ user, setUser }) {
   const [editing, setEditing] = useState(false);

@@ -61,7 +61,7 @@ export default function App() {
   return (
     <div className="app">
       <main className="app-content">
-        {tab === 'progress' && <ProgressTab habit={habit} setHabit={setHabit} />}
+        {tab === 'progress' && <ProgressTab habit={habit} setHabit={setHabit} user={user} />}
         {tab === 'today' && <TodayTab />}
         {tab === 'friends' && <FriendsTab user={user} setUser={setUser} />}
         {tab === 'motivation' && <MotivationTab />}

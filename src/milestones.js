@@ -12,8 +12,27 @@ const MILESTONES = [
   { key: 'year1', days: 365, label: 'Год', icon: '💎' },
 ];
 
-// Фиксирует новые бейджи разово (не пропадают при срыве) и поздравляет через бота
-async function awardEarnedBadges(habitId, soberDays, telegramId) {
+// Уведомляет друзей юзера, что он получил новый бейдж (соц-фича недели 5)
+async function notifyFriendsOfBadge(userId, milestone, ownerTelegramId) {
+  const { rows: ownerRows } = await pool.query('SELECT display_name, first_name FROM users WHERE id = $1', [userId]);
+  const ownerName = ownerRows[0]?.display_name || ownerRows[0]?.first_name || 'Друг';
+
+  const { rows: friends } = await pool.query(
+    'SELECT u.telegram_id FROM friendships f JOIN users u ON u.id = f.friend_id WHERE f.user_id = $1',
+    [userId]
+  );
+
+  for (const friend of friends) {
+    if (friend.telegram_id === ownerTelegramId) continue;
+    bot
+      .sendMessage(friend.telegram_id, `🎉 ${ownerName} только что получил(а) бейдж «${milestone.label}» ${milestone.icon}! Загляни поддержать.`)
+      .catch((err) => console.error('Не удалось уведомить друга о бейдже:', err.message));
+  }
+}
+
+// Фиксирует новые бейджи разово (не пропадают при срыве), поздравляет через бота
+// и уведомляет друзей юзера
+async function awardEarnedBadges(habitId, soberDays, userId, telegramId) {
   const eligible = MILESTONES.filter((m) => soberDays >= m.days);
 
   for (const m of eligible) {
@@ -26,6 +45,10 @@ async function awardEarnedBadges(habitId, soberDays, telegramId) {
       bot
         .sendMessage(telegramId, `${m.icon} Новый бейдж: «${m.label}»! Так держать.`)
         .catch((err) => console.error('Не удалось отправить поздравление с бейджем:', err.message));
+
+      notifyFriendsOfBadge(userId, m, telegramId).catch((err) =>
+        console.error('Не удалось уведомить друзей о бейдже:', err.message)
+      );
     }
   }
 }
@@ -47,8 +70,8 @@ async function getBadgesWithStatus(habitId) {
 }
 
 // Проверяет/фиксирует новые бейджи и возвращает привычку с полным списком бейджей
-async function attachBadges(habit, telegramId) {
-  await awardEarnedBadges(habit.id, habit.sober_days, telegramId);
+async function attachBadges(habit, userId, telegramId) {
+  await awardEarnedBadges(habit.id, habit.sober_days, userId, telegramId);
   const badges = await getBadgesWithStatus(habit.id);
   return { ...habit, badges };
 }

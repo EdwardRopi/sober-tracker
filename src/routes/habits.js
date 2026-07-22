@@ -39,7 +39,7 @@ router.get('/', async (req, res) => {
     );
 
     const withBadges = await Promise.all(
-      habits.map((h) => attachBadges(withCounter(h, h.last_relapse_at || h.started_at), req.telegramUser.id))
+      habits.map((h) => attachBadges(withCounter(h, h.last_relapse_at || h.started_at), userId, req.telegramUser.id))
     );
 
     res.json(withBadges);
@@ -76,7 +76,7 @@ router.post('/', async (req, res) => {
       [userId, habit_type, started_at, daily_cost || 0, reason_text || null, reason_photo_url || null]
     );
 
-    res.status(201).json(await attachBadges(withCounter(rows[0], rows[0].started_at), req.telegramUser.id));
+    res.status(201).json(await attachBadges(withCounter(rows[0], rows[0].started_at), userId, req.telegramUser.id));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Ошибка сервера' });
@@ -107,6 +107,7 @@ router.get('/:id', async (req, res) => {
 
     const withBadges = await attachBadges(
       withCounter(habit, relapses[0]?.relapsed_at || habit.started_at),
+      userId,
       req.telegramUser.id
     );
 
@@ -155,7 +156,11 @@ router.patch('/:id', async (req, res) => {
     );
 
     res.json(
-      await attachBadges(withCounter(rows[0], relapses[0]?.relapsed_at || rows[0].started_at), req.telegramUser.id)
+      await attachBadges(
+        withCounter(rows[0], relapses[0]?.relapsed_at || rows[0].started_at),
+        userId,
+        req.telegramUser.id
+      )
     );
   } catch (err) {
     console.error(err);
@@ -191,7 +196,7 @@ router.post('/:id/relapse', async (req, res) => {
 
     res.status(201).json({
       relapse,
-      habit: await attachBadges(withCounter(habit, relapse.relapsed_at), req.telegramUser.id),
+      habit: await attachBadges(withCounter(habit, relapse.relapsed_at), userId, req.telegramUser.id),
     });
   } catch (err) {
     console.error(err);
