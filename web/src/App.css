@@ -313,6 +313,56 @@ button:disabled {
   color: var(--text-dim);
 }
 
+.badges-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px 8px;
+  width: 100%;
+  max-width: 340px;
+}
+
+.badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.badge-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transition: all 0.25s;
+}
+
+.badge-earned .badge-icon {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+  box-shadow: 0 0 14px var(--accent-glow);
+}
+
+.badge-locked .badge-icon {
+  opacity: 0.35;
+  filter: grayscale(1);
+}
+
+.badge-label {
+  font-size: 9px;
+  text-align: center;
+  line-height: 1.2;
+  color: var(--text-dim);
+}
+
+.badge-earned .badge-label {
+  color: var(--text);
+}
+
 .confirm {
   display: flex;
   flex-direction: column;

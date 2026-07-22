@@ -127,6 +127,21 @@ const UNIT_LABELS = {
 };
 const CHIP_LABELS = { years: 'лет', months: 'мес', days: 'дней', hours: 'ч', minutes: 'мин', seconds: 'сек' };
 
+function BadgeStrip({ badges }) {
+  if (!badges?.length) return null;
+
+  return (
+    <div className="badges-strip">
+      {badges.map((b) => (
+        <div key={b.key} className={`badge ${b.earned ? 'badge-earned' : 'badge-locked'}`} title={b.label}>
+          <span className="badge-icon">{b.icon}</span>
+          <span className="badge-label">{b.label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function Counter({ habit, onRelapse, onUpdateHabit }) {
   const [breakdown, setBreakdown] = useState(() => breakdownSince(habit.sober_since));
   const [confirming, setConfirming] = useState(false);
@@ -268,6 +283,8 @@ function Counter({ habit, onRelapse, onUpdateHabit }) {
       </div>
 
       {habit.daily_cost > 0 && <p className="counter-sub">Сэкономлено: {habit.money_saved} ₽</p>}
+
+      <BadgeStrip badges={habit.badges} />
 
       {confirming ? (
         <div className="confirm">

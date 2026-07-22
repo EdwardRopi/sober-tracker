@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../db/pool');
+const { attachBadges } = require('../milestones');
 
 async function getUserId(telegramId) {
   const { rows } = await pool.query('SELECT id FROM users WHERE telegram_id = $1', [telegramId]);
@@ -37,7 +38,11 @@ router.get('/', async (req, res) => {
       [userId]
     );
 
-    res.json(habits.map((h) => withCounter(h, h.last_relapse_at || h.started_at)));
+    const withBadges = await Promise.all(
+      habits.map((h) => attachBadges(withCounter(h, h.last_relapse_at || h.started_at), req.telegramUser.id))
+    );
+
+    res.json(withBadges);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Ошибка сервера' });
@@ -71,7 +76,7 @@ router.post('/', async (req, res) => {
       [userId, habit_type, started_at, daily_cost || 0, reason_text || null, reason_photo_url || null]
     );
 
-    res.status(201).json(withCounter(rows[0], rows[0].started_at));
+    res.status(201).json(await attachBadges(withCounter(rows[0], rows[0].started_at), req.telegramUser.id));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Ошибка сервера' });
@@ -100,10 +105,12 @@ router.get('/:id', async (req, res) => {
       [habit.id]
     );
 
-    res.json({
-      ...withCounter(habit, relapses[0]?.relapsed_at || habit.started_at),
-      relapses,
-    });
+    const withBadges = await attachBadges(
+      withCounter(habit, relapses[0]?.relapsed_at || habit.started_at),
+      req.telegramUser.id
+    );
+
+    res.json({ ...withBadges, relapses });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Ошибка сервера' });
@@ -147,7 +154,9 @@ router.patch('/:id', async (req, res) => {
       [rows[0].id]
     );
 
-    res.json(withCounter(rows[0], relapses[0]?.relapsed_at || rows[0].started_at));
+    res.json(
+      await attachBadges(withCounter(rows[0], relapses[0]?.relapsed_at || rows[0].started_at), req.telegramUser.id)
+    );
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Ошибка сервера' });
@@ -182,7 +191,7 @@ router.post('/:id/relapse', async (req, res) => {
 
     res.status(201).json({
       relapse,
-      habit: withCounter(habit, relapse.relapsed_at),
+      habit: await attachBadges(withCounter(habit, relapse.relapsed_at), req.telegramUser.id),
     });
   } catch (err) {
     console.error(err);

@@ -60,3 +60,12 @@ CREATE TABLE IF NOT EXISTS encouragements (
   to_user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
   created_at TIMESTAMP DEFAULT NOW()
 );
+
+-- Бейджи за milestone'ы трезвости — разовое достижение, не пропадает при срыве
+CREATE TABLE IF NOT EXISTS badges_earned (
+  id SERIAL PRIMARY KEY,
+  habit_id INTEGER REFERENCES habits(id) ON DELETE CASCADE,
+  milestone_key TEXT NOT NULL,
+  earned_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE (habit_id, milestone_key)
+);
