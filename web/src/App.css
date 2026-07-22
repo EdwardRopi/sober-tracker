@@ -8,6 +8,7 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;
   padding-bottom: 12px;
 }
 
@@ -288,7 +289,7 @@ button:disabled {
 .tree-stage {
   position: absolute;
   top: 4px;
-  right: 4px;
+  right: 0;
   width: 64px;
   height: 64px;
   z-index: 3;
@@ -391,8 +392,9 @@ button:disabled {
   align-items: flex-end;
   justify-content: center;
   width: 100%;
+  max-width: 320px;
   height: 230px;
-  margin-bottom: 8px;
+  margin: 0 auto 8px;
 }
 
 .bubble {

@@ -24,6 +24,7 @@
 
 body {
   margin: 0;
+  overflow-x: hidden;
   background: var(--tg-theme-bg-color, var(--bg));
   color: var(--tg-theme-text-color, var(--text));
 }
