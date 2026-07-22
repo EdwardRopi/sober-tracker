@@ -70,7 +70,7 @@ router.post('/', async (req, res) => {
       [userId, habit_type, started_at, daily_cost || 0, reason_text || null, reason_photo_url || null]
     );
 
-    res.status(201).json(rows[0]);
+    res.status(201).json(withCounter(rows[0], rows[0].started_at));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Ошибка сервера' });
@@ -133,7 +133,12 @@ router.patch('/:id', async (req, res) => {
 
     if (!rows[0]) return res.status(404).json({ error: 'Привычка не найдена' });
 
-    res.json(rows[0]);
+    const { rows: relapses } = await pool.query(
+      'SELECT relapsed_at FROM relapses WHERE habit_id = $1 ORDER BY relapsed_at DESC LIMIT 1',
+      [rows[0].id]
+    );
+
+    res.json(withCounter(rows[0], relapses[0]?.relapsed_at || rows[0].started_at));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Ошибка сервера' });
