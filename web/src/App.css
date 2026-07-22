@@ -1,11 +1,12 @@
 .app {
   display: flex;
   flex-direction: column;
-  min-height: 100svh;
+  height: 100svh;
 }
 
 .app-content {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding-bottom: 12px;
 }
@@ -23,6 +24,7 @@
 
 .bottom-nav {
   display: flex;
+  flex-shrink: 0;
   border-top: 1px solid var(--border);
   background: var(--surface);
   padding-bottom: env(safe-area-inset-bottom, 0);
