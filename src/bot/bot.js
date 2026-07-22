@@ -64,6 +64,41 @@ bot.onText(/\/start(?:\s+(.+))?/, async (msg, match) => {
   );
 });
 
+// Донаты через Telegram Stars (см. src/routes/donate.js) — обязательно ответить
+// на pre_checkout_query в течение 10 секунд, иначе платёж Telegram отменит сам
+bot.on('pre_checkout_query', async (query) => {
+  try {
+    await bot.answerPreCheckoutQuery(query.id, true);
+  } catch (err) {
+    console.error('Ошибка ответа на pre_checkout_query:', err);
+  }
+});
+
+bot.on('successful_payment', async (msg) => {
+  try {
+    const payment = msg.successful_payment;
+    const telegramId = msg.from.id;
+
+    const { rows: userRows } = await pool.query('SELECT id FROM users WHERE telegram_id = $1', [telegramId]);
+    const userId = userRows[0]?.id;
+
+    if (userId) {
+      await pool.query('INSERT INTO donations (user_id, telegram_id, amount) VALUES ($1, $2, $3)', [
+        userId,
+        telegramId,
+        payment.total_amount,
+      ]);
+    }
+
+    await bot.sendMessage(
+      msg.chat.id,
+      `Спасибо огромное за поддержку — ${payment.total_amount} ⭐! Это реально помогает проекту жить. 💜`
+    );
+  } catch (err) {
+    console.error('Ошибка обработки successful_payment:', err);
+  }
+});
+
 // Обработка нажатий на inline-кнопки ежедневного чек-ина (см. src/bot/checkin.js)
 bot.on('callback_query', async (query) => {
   const chatId = query.message.chat.id;

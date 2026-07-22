@@ -73,3 +73,12 @@ CREATE TABLE IF NOT EXISTS badges_earned (
   earned_at TIMESTAMP DEFAULT NOW(),
   UNIQUE (habit_id, milestone_key)
 );
+
+-- Разовые донаты через Telegram Stars — "Поддержать проект"
+CREATE TABLE IF NOT EXISTS donations (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  telegram_id BIGINT NOT NULL,
+  amount INTEGER NOT NULL,  -- в звёздах (XTR не делится на подъединицы)
+  created_at TIMESTAMP DEFAULT NOW()
+);
