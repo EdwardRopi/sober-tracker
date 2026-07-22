@@ -313,21 +313,44 @@ button:disabled {
   flex-direction: column;
   align-items: center;
   gap: 20px;
-  text-align: center;
-  max-width: 320px;
+  width: 100%;
+  max-width: 340px;
 }
 
-.motivation-label {
+.motivation-photo {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  border-radius: 22px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 22px;
+  box-sizing: border-box;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  text-align: left;
+}
+
+.motivation-photo-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 35%, rgba(0, 0, 0, 0.6) 100%);
+}
+
+.motivation-date {
+  position: relative;
   font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-dim);
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 10px;
 }
 
 .motivation-quote {
-  font-size: 20px;
-  line-height: 1.4;
-  font-style: italic;
+  position: relative;
+  font-size: 21px;
+  line-height: 1.35;
+  font-weight: 600;
+  color: #fff;
 }
 
 .error {
