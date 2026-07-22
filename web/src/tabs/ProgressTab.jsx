@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { api } from '../api';
 import { haptic } from '../haptic';
 import { BOT_USERNAME } from '../constants';
+import GrowingTree from './GrowingTree';
 
 const HABIT_TYPES = [
   { value: 'alcohol', label: 'Алкоголь' },
@@ -14,6 +15,10 @@ const HABIT_TYPES = [
 
 function habitTypeLabel(value) {
   return HABIT_TYPES.find((t) => t.value === value)?.label || value;
+}
+
+function nowLocal() {
+  return new Date().toISOString().slice(0, 16);
 }
 
 function pluralDays(n) {
@@ -60,9 +65,27 @@ function breakdownSince(soberSince) {
   return { years, months, days, hours, minutes, seconds };
 }
 
-function HabitForm({ onCreated }) {
+// Непрерывный прогресс роста дерева 0..8, интерполированный между порогами бейджей
+// (badges уже отсортированы по возрастанию days в src/milestones.js)
+function treeProgress(continuousDays, badges) {
+  if (!badges?.length) return 0;
+
+  const thresholds = [0, ...badges.map((b) => b.days)];
+  let stage = 0;
+  for (let i = 0; i < thresholds.length - 1; i++) {
+    if (continuousDays >= thresholds[i]) stage = i;
+  }
+
+  const lo = thresholds[stage];
+  const hi = thresholds[stage + 1] ?? lo + 1;
+  const t = hi > lo ? Math.min(1, Math.max(0, (continuousDays - lo) / (hi - lo))) : 1;
+
+  return Math.min(thresholds.length - 1, stage + t);
+}
+
+function HabitForm({ onCreated, onCancel }) {
   const [habitType, setHabitType] = useState(HABIT_TYPES[0].value);
-  const [startedAt, setStartedAt] = useState(() => new Date().toISOString().slice(0, 16));
+  const [startedAt, setStartedAt] = useState(nowLocal);
   const [dailyCost, setDailyCost] = useState('');
   const [reasonText, setReasonText] = useState('');
   const [error, setError] = useState('');
@@ -71,6 +94,12 @@ function HabitForm({ onCreated }) {
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
+
+    if (new Date(startedAt) > new Date()) {
+      setError('Дата начала не может быть в будущем');
+      return;
+    }
+
     setSubmitting(true);
     try {
       const habit = await api.createHabit({
@@ -90,7 +119,7 @@ function HabitForm({ onCreated }) {
   return (
     <div className="onboarding">
       <div className="onboarding-icon">🌱</div>
-      <h2>Начни свой путь</h2>
+      <h2>{onCancel ? 'Новая привычка' : 'Начни свой путь'}</h2>
       <p className="hint onboarding-subtitle">
         Выбери, от чего отказываешься, и дату, с которой начинаешь отсчёт — дальше мы всё посчитаем сами.
       </p>
@@ -109,7 +138,13 @@ function HabitForm({ onCreated }) {
 
         <label>
           Отсчёт трезвости с
-          <input type="datetime-local" value={startedAt} onChange={(e) => setStartedAt(e.target.value)} required />
+          <input
+            type="datetime-local"
+            value={startedAt}
+            max={nowLocal()}
+            onChange={(e) => setStartedAt(e.target.value)}
+            required
+          />
         </label>
 
         <label>
@@ -133,7 +168,34 @@ function HabitForm({ onCreated }) {
         <button type="submit" className="primary" disabled={submitting}>
           {submitting ? 'Сохраняю...' : 'Начать'}
         </button>
+        {onCancel && (
+          <button type="button" onClick={onCancel} disabled={submitting}>
+            Отмена
+          </button>
+        )}
       </form>
+    </div>
+  );
+}
+
+function HabitSwitcher({ habits, activeId, onSelect, onAdd, canAdd }) {
+  return (
+    <div className="habit-switcher">
+      {habits.map((h) => (
+        <button
+          key={h.id}
+          type="button"
+          className={`habit-chip ${h.id === activeId ? 'active' : ''}`}
+          onClick={() => onSelect(h.id)}
+        >
+          {habitTypeLabel(h.habit_type)}
+        </button>
+      ))}
+      {canAdd && (
+        <button type="button" className="habit-chip habit-chip-add" onClick={onAdd} title="Добавить привычку">
+          +
+        </button>
+      )}
     </div>
   );
 }
@@ -214,6 +276,7 @@ function Counter({ habit, onRelapse, onUpdateHabit, user }) {
   const [busy, setBusy] = useState(false);
   const [editingDate, setEditingDate] = useState(false);
   const [dateDraft, setDateDraft] = useState(() => new Date(habit.started_at).toISOString().slice(0, 16));
+  const [dateError, setDateError] = useState('');
   const [savingDate, setSavingDate] = useState(false);
   const [editingType, setEditingType] = useState(false);
   const [typeDraft, setTypeDraft] = useState(habit.habit_type);
@@ -239,6 +302,13 @@ function Counter({ habit, onRelapse, onUpdateHabit, user }) {
 
   async function handleDateSave(e) {
     e.preventDefault();
+    setDateError('');
+
+    if (new Date(dateDraft) > new Date()) {
+      setDateError('Дата начала не может быть в будущем');
+      return;
+    }
+
     setSavingDate(true);
     haptic('light');
     try {
@@ -283,6 +353,9 @@ function Counter({ habit, onRelapse, onUpdateHabit, user }) {
   const primaryUnit = UNIT_ORDER[primaryIdx];
   const secondaryUnit = primaryIdx < UNIT_ORDER.length - 1 ? UNIT_ORDER[primaryIdx + 1] : null;
   const restUnits = UNIT_ORDER.filter((u) => u !== primaryUnit && u !== secondaryUnit);
+
+  const continuousDays = (Date.now() - new Date(habit.sober_since).getTime()) / 86400000;
+  const growth = treeProgress(continuousDays, habit.badges);
 
   return (
     <div className="counter">
@@ -333,7 +406,13 @@ function Counter({ habit, onRelapse, onUpdateHabit, user }) {
       {editingDate && (
         <form className="date-edit-form" onSubmit={handleDateSave}>
           <p className="hint">Это сбросит счётчик заново от новой даты и очистит историю прошлых срывов.</p>
-          <input type="datetime-local" value={dateDraft} onChange={(e) => setDateDraft(e.target.value)} />
+          <input
+            type="datetime-local"
+            value={dateDraft}
+            max={nowLocal()}
+            onChange={(e) => setDateDraft(e.target.value)}
+          />
+          {dateError && <p className="error">{dateError}</p>}
           <div className="confirm-buttons">
             <button type="submit" className="primary" disabled={savingDate}>
               {savingDate ? 'Сохраняю...' : 'Сохранить'}
@@ -346,6 +425,10 @@ function Counter({ habit, onRelapse, onUpdateHabit, user }) {
       )}
 
       <div className="bubbles">
+        <div className="tree-stage">
+          <GrowingTree progress={growth} />
+        </div>
+
         <div className="bubble bubble-primary">
           <span className="bubble-value">{breakdown[primaryUnit]}</span>
           <span className="bubble-unit">{UNIT_LABELS[primaryUnit]}</span>
@@ -399,13 +482,57 @@ function Counter({ habit, onRelapse, onUpdateHabit, user }) {
   );
 }
 
-export default function ProgressTab({ habit, setHabit, user }) {
+export default function ProgressTab({ habits, setHabits, user }) {
+  const [activeId, setActiveId] = useState(habits[0]?.id ?? null);
+  const [adding, setAdding] = useState(false);
+
+  useEffect(() => {
+    if (!habits.some((h) => h.id === activeId)) {
+      setActiveId(habits[0]?.id ?? null);
+    }
+  }, [habits, activeId]);
+
+  function replaceHabit(updated) {
+    setHabits((prev) => prev.map((h) => (h.id === updated.id ? updated : h)));
+  }
+
+  function handleCreated(habit) {
+    setHabits((prev) => [...prev, habit]);
+    setActiveId(habit.id);
+    setAdding(false);
+  }
+
+  const canAddMore = user?.is_premium;
+  const activeHabit = habits.find((h) => h.id === activeId) || null;
+
+  if (habits.length === 0) {
+    return (
+      <div className="tab-screen">
+        <HabitForm onCreated={handleCreated} />
+      </div>
+    );
+  }
+
   return (
     <div className="tab-screen">
-      {habit ? (
-        <Counter habit={habit} onRelapse={setHabit} onUpdateHabit={setHabit} user={user} />
+      {(habits.length > 1 || canAddMore) && (
+        <HabitSwitcher
+          habits={habits}
+          activeId={activeId}
+          onSelect={(id) => {
+            setAdding(false);
+            setActiveId(id);
+          }}
+          onAdd={() => setAdding(true)}
+          canAdd={canAddMore}
+        />
+      )}
+      {adding ? (
+        <HabitForm onCreated={handleCreated} onCancel={() => setAdding(false)} />
       ) : (
-        <HabitForm onCreated={setHabit} />
+        activeHabit && (
+          <Counter habit={activeHabit} onRelapse={replaceHabit} onUpdateHabit={replaceHabit} user={user} />
+        )
       )}
     </div>
   );

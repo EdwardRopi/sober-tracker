@@ -16,7 +16,7 @@ function scheduleCheckins() {
             inline_keyboard: [
               [
                 { text: 'Держусь 💪', callback_data: 'checkin_ok' },
-                { text: 'Сорвался', callback_data: 'checkin_relapse' },
+                { text: 'Начать по новой', callback_data: 'checkin_relapse' },
               ],
             ],
           },

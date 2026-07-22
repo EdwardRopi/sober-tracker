@@ -10,6 +10,10 @@ const MILESTONES = [
   { key: 'month3', days: 90, label: '3 месяца', icon: '🌟' },
   { key: 'month6', days: 180, label: 'Полгода', icon: '👑' },
   { key: 'year1', days: 365, label: 'Год', icon: '💎' },
+  { key: 'year2', days: 730, label: '2 года', icon: '🏔️' },
+  { key: 'year3', days: 1095, label: '3 года', icon: '🦋' },
+  { key: 'year5', days: 1825, label: '5 лет', icon: '🌈' },
+  { key: 'year10', days: 3650, label: '10 лет', icon: '♾️' },
 ];
 
 // Уведомляет друзей юзера, что он получил новый бейдж (соц-фича недели 5)

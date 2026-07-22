@@ -17,7 +17,7 @@ function initialTab() {
 
 export default function App() {
   const [tab, setTab] = useState(initialTab);
-  const [habit, setHabit] = useState(null);
+  const [habits, setHabits] = useState([]);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -31,7 +31,7 @@ export default function App() {
         const profile = await api.initAuth();
         setUser(profile);
         const habits = await api.getHabits();
-        setHabit(habits[0] || null);
+        setHabits(habits);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -61,7 +61,7 @@ export default function App() {
   return (
     <div className="app">
       <main className="app-content">
-        {tab === 'progress' && <ProgressTab habit={habit} setHabit={setHabit} user={user} />}
+        {tab === 'progress' && <ProgressTab habits={habits} setHabits={setHabits} user={user} />}
         {tab === 'today' && <TodayTab />}
         {tab === 'friends' && <FriendsTab user={user} setUser={setUser} />}
         {tab === 'motivation' && <MotivationTab />}

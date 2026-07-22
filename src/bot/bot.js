@@ -8,6 +8,19 @@ function randomQuote() {
   return quotes[Math.floor(Math.random() * quotes.length)];
 }
 
+const HABIT_LABELS = {
+  alcohol: 'Алкоголь',
+  drugs: 'Наркотики',
+  nicotine: 'Никотин',
+  games: 'Игры',
+  reels: 'Рилзы',
+  social_media: 'Соцсети',
+};
+
+function habitLabel(type) {
+  return HABIT_LABELS[type] || type;
+}
+
 // Deep-link приглашение друга — Telegram шлёт "/start inv<id>", если перешли по ссылке
 // вида t.me/<bot>?start=inv123. Заводим юзера (если он новый) и делаем дружбу симметричной.
 async function handleInvitePayload(payload, fromUser) {
@@ -120,16 +133,46 @@ bot.on('callback_query', async (query) => {
     if (query.data === 'checkin_relapse') {
       const { rows: userRows } = await pool.query('SELECT id FROM users WHERE telegram_id = $1', [telegramId]);
       const userId = userRows[0]?.id;
+      const { rows: habits } = userId
+        ? await pool.query('SELECT id, habit_type FROM habits WHERE user_id = $1', [userId])
+        : { rows: [] };
 
-      if (userId) {
-        const { rows: habits } = await pool.query('SELECT id FROM habits WHERE user_id = $1', [userId]);
-        for (const habit of habits) {
-          await pool.query('INSERT INTO relapses (habit_id) VALUES ($1)', [habit.id]);
-        }
+      if (habits.length > 1) {
+        // Premium-юзер с несколькими привычками — уточняем, какая именно, а не сбрасываем все разом
+        await bot.answerCallbackQuery(query.id);
+        await bot.sendMessage(chatId, 'По какой из привычек?', {
+          reply_markup: {
+            inline_keyboard: habits.map((h) => [
+              { text: habitLabel(h.habit_type), callback_data: `checkin_relapse_pick_${h.id}` },
+            ]),
+          },
+        });
+        return;
       }
 
-      await bot.answerCallbackQuery(query.id, { text: 'Срыв записан.' });
-      await bot.sendMessage(chatId, `Не страшно, главное — не бросать попытки.\n${randomQuote()}`);
+      if (habits[0]) {
+        await pool.query('INSERT INTO relapses (habit_id) VALUES ($1)', [habits[0].id]);
+      }
+
+      await bot.answerCallbackQuery(query.id, { text: 'Записано.' });
+      await bot.sendMessage(chatId, `Не страшно, главное — начать заново.\n${randomQuote()}`);
+      return;
+    }
+
+    if (query.data.startsWith('checkin_relapse_pick_')) {
+      const habitId = query.data.slice('checkin_relapse_pick_'.length);
+
+      const { rows: habitRows } = await pool.query(
+        `SELECT h.id FROM habits h JOIN users u ON u.id = h.user_id WHERE h.id = $1 AND u.telegram_id = $2`,
+        [habitId, telegramId]
+      );
+
+      if (habitRows[0]) {
+        await pool.query('INSERT INTO relapses (habit_id) VALUES ($1)', [habitRows[0].id]);
+      }
+
+      await bot.answerCallbackQuery(query.id, { text: 'Записано.' });
+      await bot.sendMessage(chatId, `Не страшно, главное — начать заново.\n${randomQuote()}`);
     }
   } catch (err) {
     console.error('Ошибка обработки callback_query:', err);

@@ -241,6 +241,39 @@ button:disabled {
   box-shadow: none;
 }
 
+/* Progress tab / habit switcher */
+
+.habit-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 360px;
+  margin-bottom: 16px;
+}
+
+.habit-chip {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-dim);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.habit-chip.active {
+  border-color: var(--accent);
+  color: var(--text);
+  background: var(--accent-dim);
+}
+
+.habit-chip-add {
+  font-weight: 700;
+  color: var(--accent);
+}
+
 /* Progress tab / counter */
 
 .counter {
@@ -250,6 +283,63 @@ button:disabled {
   gap: 20px;
   text-align: center;
   width: 100%;
+}
+
+.tree-stage {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 64px;
+  height: 64px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.growing-tree {
+  width: 100%;
+  height: 100%;
+}
+
+.tree-ground {
+  fill: var(--border);
+}
+
+.tree-trunk {
+  stroke: var(--text-dim);
+  stroke-width: 4;
+  stroke-linecap: round;
+  transition: y2 0.8s ease, stroke-width 0.8s ease;
+}
+
+.tree-branch {
+  stroke: var(--text-dim);
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: x2 0.8s ease, y2 0.8s ease, opacity 0.8s ease;
+}
+
+.tree-leaf {
+  fill: var(--accent);
+  filter: drop-shadow(0 0 6px var(--accent-glow));
+  transition: r 0.8s ease, opacity 0.8s ease;
+}
+
+.tree-sparkle {
+  fill: var(--accent);
+  filter: drop-shadow(0 0 4px var(--accent-glow));
+  animation: treeSparkle 2.4s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes treeSparkle {
+  0%, 100% {
+    opacity: 0.15;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.3);
+  }
 }
 
 .counter-label {

@@ -12,8 +12,11 @@ async function main() {
     process.exit(1);
   }
 
+  // premium_expires_at сбрасываем в NULL (бессрочно) при включении — иначе просроченный
+  // таймстамп от предыдущей донат-подписки оставит isEffectivelyPremium false
   const { rows } = await pool.query(
-    'UPDATE users SET is_premium = $1 WHERE telegram_id = $2 RETURNING id, display_name, is_premium',
+    `UPDATE users SET is_premium = $1, premium_expires_at = CASE WHEN $1 THEN NULL ELSE premium_expires_at END
+     WHERE telegram_id = $2 RETURNING id, display_name, is_premium`,
     [mode !== 'off', telegramId]
   );
 

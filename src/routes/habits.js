@@ -59,6 +59,10 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'habit_type и started_at обязательны' });
     }
 
+    if (new Date(started_at) > new Date()) {
+      return res.status(400).json({ error: 'Дата начала не может быть в будущем' });
+    }
+
     const userId = await getUserId(req.telegramUser.id);
     if (!userId) return res.status(404).json({ error: 'Юзер не найден' });
 
@@ -129,6 +133,10 @@ router.patch('/:id', async (req, res) => {
     if (!userId) return res.status(404).json({ error: 'Юзер не найден' });
 
     const { daily_cost, reason_text, reason_photo_url, started_at, habit_type } = req.body;
+
+    if (started_at && new Date(started_at) > new Date()) {
+      return res.status(400).json({ error: 'Дата начала не может быть в будущем' });
+    }
 
     const { rows } = await pool.query(
       `UPDATE habits

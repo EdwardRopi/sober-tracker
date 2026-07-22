@@ -11,7 +11,7 @@ async function main() {
       COUNT(*) FILTER (WHERE last_seen_at > NOW() - INTERVAL '1 day') AS active_24h,
       COUNT(*) FILTER (WHERE last_seen_at > NOW() - INTERVAL '7 days') AS active_7d,
       COUNT(*) FILTER (WHERE last_seen_at > NOW() - INTERVAL '30 days') AS active_30d,
-      COUNT(*) FILTER (WHERE is_premium) AS premium
+      COUNT(*) FILTER (WHERE is_premium AND (premium_expires_at IS NULL OR premium_expires_at > NOW())) AS premium
     FROM users
   `);
 

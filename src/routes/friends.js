@@ -11,23 +11,32 @@ async function getUserId(telegramId) {
   return rows[0]?.id;
 }
 
-function soberDays(startedAt, lastRelapseAt) {
-  const since = lastRelapseAt || startedAt;
+function soberDays(since) {
   return Math.floor((Date.now() - new Date(since).getTime()) / 86400000);
 }
 
 // GET /api/friends — лидерборд друзей по дням трезвости
+// Для друга с несколькими привычками (premium) на лидерборде показываем ту, что
+// держится дольше всего — иначе друг появлялся бы в списке по разу на привычку.
 router.get('/', async (req, res) => {
   try {
     const userId = await getUserId(req.telegramUser.id);
     if (!userId) return res.status(404).json({ error: 'Юзер не найден' });
 
     const { rows } = await pool.query(
-      `SELECT u.id, u.display_name, u.first_name, u.hidden_profile, u.is_premium, u.premium_expires_at, h.started_at,
-              (SELECT relapsed_at FROM relapses WHERE habit_id = h.id ORDER BY relapsed_at DESC LIMIT 1) AS last_relapse_at
+      `SELECT u.id, u.display_name, u.first_name, u.hidden_profile, u.is_premium, u.premium_expires_at, h.since
        FROM friendships f
        JOIN users u ON u.id = f.friend_id
-       LEFT JOIN habits h ON h.user_id = u.id
+       LEFT JOIN LATERAL (
+         SELECT COALESCE(
+           (SELECT relapsed_at FROM relapses WHERE habit_id = hb.id ORDER BY relapsed_at DESC LIMIT 1),
+           hb.started_at
+         ) AS since
+         FROM habits hb
+         WHERE hb.user_id = u.id
+         ORDER BY since ASC
+         LIMIT 1
+       ) h ON true
        WHERE f.user_id = $1`,
       [userId]
     );
@@ -39,7 +48,7 @@ router.get('/', async (req, res) => {
         name: r.display_name || r.first_name,
         hidden: r.hidden_profile,
         is_premium: isEffectivelyPremium(r),
-        sober_days: !r.hidden_profile && r.started_at ? soberDays(r.started_at, r.last_relapse_at) : null,
+        sober_days: !r.hidden_profile && r.since ? soberDays(r.since) : null,
       }))
       .sort((a, b) => (b.sober_days ?? -1) - (a.sober_days ?? -1));
 
