@@ -7,8 +7,15 @@ import FriendsTab from './tabs/FriendsTab';
 import MotivationTab from './tabs/MotivationTab';
 import './App.css';
 
+const VALID_TABS = ['progress', 'today', 'friends', 'motivation'];
+
+function initialTab() {
+  const requested = new URLSearchParams(window.location.search).get('tab');
+  return VALID_TABS.includes(requested) ? requested : 'progress';
+}
+
 export default function App() {
-  const [tab, setTab] = useState('progress');
+  const [tab, setTab] = useState(initialTab);
   const [habit, setHabit] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);

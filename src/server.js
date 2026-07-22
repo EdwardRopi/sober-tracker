@@ -9,6 +9,7 @@ const friendsRoutes = require('./routes/friends');
 const avatarRoutes = require('./routes/avatar');
 require('./bot/bot');
 const { scheduleCheckins } = require('./bot/checkin');
+const { scheduleJournalReminders } = require('./bot/journalReminder');
 
 const app = express();
 app.use(cors());
@@ -28,6 +29,7 @@ app.use('/api/journal', journalRoutes);
 app.use('/api/friends', friendsRoutes);
 
 scheduleCheckins();
+scheduleJournalReminders();
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
