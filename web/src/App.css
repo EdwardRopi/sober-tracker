@@ -156,13 +156,19 @@ button:disabled {
   gap: 10px;
 }
 
-.date-edit-form input {
+.date-edit-form input,
+.date-edit-form select {
   padding: 8px 10px;
   border-radius: 8px;
   border: 1px solid var(--border);
   background: var(--surface-2);
   color: var(--text);
   font-size: 14px;
+}
+
+.habit-type-label {
+  font-size: 17px;
+  font-weight: 700;
 }
 
 .bubbles {

@@ -5,8 +5,14 @@ const HABIT_TYPES = [
   { value: 'alcohol', label: 'Алкоголь' },
   { value: 'drugs', label: 'Наркотики' },
   { value: 'nicotine', label: 'Никотин' },
+  { value: 'games', label: 'Игры' },
+  { value: 'reels', label: 'Рилзы' },
   { value: 'social_media', label: 'Соцсети' },
 ];
+
+function habitTypeLabel(value) {
+  return HABIT_TYPES.find((t) => t.value === value)?.label || value;
+}
 
 function breakdownSince(soberSince) {
   const start = new Date(soberSince);
@@ -128,6 +134,9 @@ function Counter({ habit, onRelapse, onUpdateHabit }) {
   const [editingDate, setEditingDate] = useState(false);
   const [dateDraft, setDateDraft] = useState(() => new Date(habit.started_at).toISOString().slice(0, 16));
   const [savingDate, setSavingDate] = useState(false);
+  const [editingType, setEditingType] = useState(false);
+  const [typeDraft, setTypeDraft] = useState(habit.habit_type);
+  const [savingType, setSavingType] = useState(false);
 
   useEffect(() => {
     const id = setInterval(() => setBreakdown(breakdownSince(habit.sober_since)), 1000);
@@ -157,6 +166,18 @@ function Counter({ habit, onRelapse, onUpdateHabit }) {
     }
   }
 
+  async function handleTypeSave(e) {
+    e.preventDefault();
+    setSavingType(true);
+    try {
+      const updated = await api.updateHabit(habit.id, { habit_type: typeDraft });
+      onUpdateHabit(updated);
+      setEditingType(false);
+    } finally {
+      setSavingType(false);
+    }
+  }
+
   let primaryIdx = UNIT_ORDER.findIndex((u) => breakdown[u] > 0);
   if (primaryIdx === -1) primaryIdx = UNIT_ORDER.length - 1;
   const primaryUnit = UNIT_ORDER[primaryIdx];
@@ -165,6 +186,38 @@ function Counter({ habit, onRelapse, onUpdateHabit }) {
 
   return (
     <div className="counter">
+      <div className="counter-header">
+        <p className="habit-type-label">{habitTypeLabel(habit.habit_type)}</p>
+        <button
+          type="button"
+          className="icon-button"
+          onClick={() => setEditingType((v) => !v)}
+          title="Изменить вид зависимости"
+        >
+          🔀
+        </button>
+      </div>
+
+      {editingType && (
+        <form className="date-edit-form" onSubmit={handleTypeSave}>
+          <select value={typeDraft} onChange={(e) => setTypeDraft(e.target.value)}>
+            {HABIT_TYPES.map((t) => (
+              <option key={t.value} value={t.value}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+          <div className="confirm-buttons">
+            <button type="submit" className="primary" disabled={savingType}>
+              {savingType ? 'Сохраняю...' : 'Сохранить'}
+            </button>
+            <button type="button" onClick={() => setEditingType(false)} disabled={savingType}>
+              Отмена
+            </button>
+          </div>
+        </form>
+      )}
+
       <div className="counter-header">
         <p className="counter-label">Я чист(а) уже</p>
         <button

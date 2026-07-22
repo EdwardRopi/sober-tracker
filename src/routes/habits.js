@@ -120,17 +120,18 @@ router.patch('/:id', async (req, res) => {
     const userId = await getUserId(req.telegramUser.id);
     if (!userId) return res.status(404).json({ error: 'Юзер не найден' });
 
-    const { daily_cost, reason_text, reason_photo_url, started_at } = req.body;
+    const { daily_cost, reason_text, reason_photo_url, started_at, habit_type } = req.body;
 
     const { rows } = await pool.query(
       `UPDATE habits
        SET daily_cost = COALESCE($1, daily_cost),
            reason_text = COALESCE($2, reason_text),
            reason_photo_url = COALESCE($3, reason_photo_url),
-           started_at = COALESCE($4, started_at)
-       WHERE id = $5 AND user_id = $6
+           started_at = COALESCE($4, started_at),
+           habit_type = COALESCE($5, habit_type)
+       WHERE id = $6 AND user_id = $7
        RETURNING *`,
-      [daily_cost, reason_text, reason_photo_url, started_at, req.params.id, userId]
+      [daily_cost, reason_text, reason_photo_url, started_at, habit_type, req.params.id, userId]
     );
 
     if (!rows[0]) return res.status(404).json({ error: 'Привычка не найдена' });
