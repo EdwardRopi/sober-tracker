@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS users (
   display_name TEXT,  -- имя, которое юзер видит у друзей — можно поменять, иначе = first_name
   is_premium BOOLEAN NOT NULL DEFAULT FALSE,  -- пока выставляется вручную (см. npm run grant-premium), оплата будет позже
   last_seen_at TIMESTAMP DEFAULT NOW(),  -- обновляется при каждом открытии мини-аппа, см. POST /api/auth/init
+  hidden_profile BOOLEAN NOT NULL DEFAULT FALSE,  -- друзья видят только имя+фото, без вида зависимости и дней
   created_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -14,6 +15,7 @@ CREATE TABLE IF NOT EXISTS users (
 ALTER TABLE users ADD COLUMN IF NOT EXISTS display_name TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS is_premium BOOLEAN NOT NULL DEFAULT FALSE;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS last_seen_at TIMESTAMP DEFAULT NOW();
+ALTER TABLE users ADD COLUMN IF NOT EXISTS hidden_profile BOOLEAN NOT NULL DEFAULT FALSE;
 -- Аватарка теперь не хранится — отдаётся живьём через /avatar/:userId (Bot API), см. src/routes/avatar.js
 ALTER TABLE users DROP COLUMN IF EXISTS avatar_url;
 

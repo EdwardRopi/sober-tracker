@@ -30,8 +30,7 @@ export const api = {
   getTodayPromise: () => request('/api/journal/promise-today'),
   addJournalEntry: (entryType, text) =>
     request('/api/journal', { method: 'POST', body: JSON.stringify({ entry_type: entryType, text }) }),
-  updateProfile: (displayName) =>
-    request('/api/auth/profile', { method: 'PATCH', body: JSON.stringify({ display_name: displayName }) }),
+  updateProfile: (updates) => request('/api/auth/profile', { method: 'PATCH', body: JSON.stringify(updates) }),
   getFriends: () => request('/api/friends'),
   encourageFriend: (friendId) => request(`/api/friends/${friendId}/encourage`, { method: 'POST' }),
 };

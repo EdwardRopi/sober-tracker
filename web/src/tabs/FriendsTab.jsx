@@ -10,6 +10,7 @@ function ProfileCard({ user, setUser }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [avatarFailed, setAvatarFailed] = useState(false);
+  const [savingPrivacy, setSavingPrivacy] = useState(false);
 
   async function handleSave(e) {
     e.preventDefault();
@@ -17,13 +18,28 @@ function ProfileCard({ user, setUser }) {
     setBusy(true);
     setError('');
     try {
-      const updated = await api.updateProfile(name.trim());
+      const updated = await api.updateProfile({ display_name: name.trim() });
       setUser(updated);
       setEditing(false);
     } catch (err) {
       setError(err.message);
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function handleTogglePrivacy() {
+    const next = !user.hidden_profile;
+    setSavingPrivacy(true);
+    setError('');
+    try {
+      const updated = await api.updateProfile({ hidden_profile: next });
+      setUser(updated);
+      haptic('light');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSavingPrivacy(false);
     }
   }
 
@@ -65,6 +81,22 @@ function ProfileCard({ user, setUser }) {
           </div>
         )}
       </div>
+
+      <label className="switch-row">
+        <span>Скрытый профиль</span>
+        <span className="switch">
+          <input
+            type="checkbox"
+            checked={!!user.hidden_profile}
+            onChange={handleTogglePrivacy}
+            disabled={savingPrivacy}
+          />
+          <span className="switch-slider" />
+        </span>
+      </label>
+      <p className="hint">
+        Друзья будут видеть только твоё имя и фото — без вида зависимости и счётчика дней.
+      </p>
 
       {error && <p className="error">{error}</p>}
       <p className="hint">Аватарка берётся из твоего профиля в Telegram — поменяй её там, и она обновится и здесь.</p>
@@ -111,7 +143,13 @@ function FriendRow({ friend, rank, onEncourage, encouraged, limitReached }) {
       )}
       <div className="friend-info">
         <p className="friend-name">{friend.name}</p>
-        <p className="hint">{friend.sober_days != null ? `${friend.sober_days} дн. трезвости` : 'нет трекера'}</p>
+        <p className="hint">
+          {friend.hidden
+            ? 'Профиль скрыт'
+            : friend.sober_days != null
+              ? `${friend.sober_days} дн. трезвости`
+              : 'нет трекера'}
+        </p>
       </div>
       <button
         type="button"

@@ -22,18 +22,23 @@ router.post('/init', async (req, res) => {
   }
 });
 
-// PATCH /api/auth/profile — поменять отображаемое имя
+// PATCH /api/auth/profile — поменять отображаемое имя и/или приватность профиля.
+// Оба поля необязательны по отдельности — можно прислать только одно.
 router.patch('/profile', async (req, res) => {
-  const { display_name } = req.body;
+  const { display_name, hidden_profile } = req.body;
 
-  if (!display_name || !display_name.trim()) {
-    return res.status(400).json({ error: 'display_name обязателен' });
+  if (display_name !== undefined && !display_name.trim()) {
+    return res.status(400).json({ error: 'display_name не может быть пустым' });
   }
 
   try {
     const result = await pool.query(
-      `UPDATE users SET display_name = $1 WHERE telegram_id = $2 RETURNING *`,
-      [display_name.trim().slice(0, 60), req.telegramUser.id]
+      `UPDATE users
+       SET display_name = COALESCE($1, display_name),
+           hidden_profile = COALESCE($2, hidden_profile)
+       WHERE telegram_id = $3
+       RETURNING *`,
+      [display_name ? display_name.trim().slice(0, 60) : null, hidden_profile ?? null, req.telegramUser.id]
     );
 
     if (!result.rows[0]) return res.status(404).json({ error: 'Юзер не найден' });

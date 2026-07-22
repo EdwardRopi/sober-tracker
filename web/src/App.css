@@ -627,6 +627,65 @@ button:disabled {
   vertical-align: middle;
 }
 
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.switch-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.switch-slider::before {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 2px;
+  top: 2px;
+  background: var(--text-dim);
+  border-radius: 50%;
+  transition: transform 0.2s, background 0.2s;
+}
+
+.switch input:checked + .switch-slider {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+}
+
+.switch input:checked + .switch-slider::before {
+  transform: translateX(18px);
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+.switch input:disabled + .switch-slider {
+  opacity: 0.6;
+}
+
 .friends-list {
   list-style: none;
   margin: 0;
