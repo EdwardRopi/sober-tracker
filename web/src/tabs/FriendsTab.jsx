@@ -4,6 +4,88 @@ import { haptic } from '../haptic';
 import Spinner from '../Spinner';
 import { BOT_USERNAME } from '../constants';
 
+const DONATE_AMOUNTS = [50, 100, 250, 500];
+
+function DonateFlow({ onClose, onDonated }) {
+  const [step, setStep] = useState('info');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  async function handleDonate(amount) {
+    setBusy(true);
+    setError('');
+    try {
+      const { link } = await api.createDonation(amount);
+
+      if (window.Telegram?.WebApp?.openInvoice) {
+        window.Telegram.WebApp.openInvoice(link, (status) => {
+          setBusy(false);
+          if (status === 'paid') {
+            haptic('success');
+            onDonated();
+          }
+          onClose();
+        });
+      } else {
+        window.open(link, '_blank');
+        setBusy(false);
+        onClose();
+      }
+    } catch (err) {
+      setError(err.message);
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className="modal-overlay" onClick={() => onClose()}>
+      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+        {step === 'info' ? (
+          <>
+            <p className="modal-title">Поддержать проект</p>
+            <p className="modal-text">Разработчик предпочитает оставаться анонимным.</p>
+            <p className="modal-text">
+              Приложением можно пользоваться абсолютно бесплатно — так было и будет для основных функций.
+              Разработчик сам в сообществе АН и оплачивает хостинг и домен из своего кармана.
+            </p>
+            <p className="modal-text">
+              Если хочешь помочь — можно задонатить звёзды Telegram. Разовый донат раз в месяц даёт Premium-доступ
+              и звёздочку на аватарке.
+            </p>
+            <button type="button" className="primary" onClick={() => setStep('amount')}>
+              ОК
+            </button>
+            <button type="button" className="link-button" onClick={() => onClose()}>
+              Не сейчас
+            </button>
+          </>
+        ) : (
+          <>
+            <p className="modal-title">Сколько задонатить?</p>
+            <div className="donate-amounts">
+              {DONATE_AMOUNTS.map((amount) => (
+                <button
+                  key={amount}
+                  type="button"
+                  className="secondary"
+                  onClick={() => handleDonate(amount)}
+                  disabled={busy}
+                >
+                  {amount} ⭐
+                </button>
+              ))}
+            </div>
+            {error && <p className="error">{error}</p>}
+            <button type="button" className="link-button" onClick={() => onClose()} disabled={busy}>
+              Отмена
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function ProfileCard({ user, setUser }) {
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(user.display_name || user.first_name || '');
@@ -11,6 +93,7 @@ function ProfileCard({ user, setUser }) {
   const [error, setError] = useState('');
   const [avatarFailed, setAvatarFailed] = useState(false);
   const [savingPrivacy, setSavingPrivacy] = useState(false);
+  const [donateOpen, setDonateOpen] = useState(false);
 
   async function handleSave(e) {
     e.preventDefault();
@@ -43,19 +126,26 @@ function ProfileCard({ user, setUser }) {
     }
   }
 
+  function handleDonated() {
+    api.initAuth().then(setUser).catch(() => {});
+  }
+
   return (
     <div className="card profile-card">
       <div className="profile-row">
-        {!avatarFailed ? (
-          <img
-            className="avatar"
-            src={`${API_URL}/avatar/${user.id}`}
-            alt=""
-            onError={() => setAvatarFailed(true)}
-          />
-        ) : (
-          <div className="avatar avatar-placeholder">{(user.display_name || '?')[0]?.toUpperCase()}</div>
-        )}
+        <div className="avatar-wrap">
+          {!avatarFailed ? (
+            <img
+              className="avatar"
+              src={`${API_URL}/avatar/${user.id}`}
+              alt=""
+              onError={() => setAvatarFailed(true)}
+            />
+          ) : (
+            <div className="avatar avatar-placeholder">{(user.display_name || '?')[0]?.toUpperCase()}</div>
+          )}
+          {user.is_premium && <span className="avatar-star">⭐</span>}
+        </div>
 
         {editing ? (
           <form className="profile-edit-form" onSubmit={handleSave}>
@@ -71,10 +161,20 @@ function ProfileCard({ user, setUser }) {
           </form>
         ) : (
           <div className="profile-info">
-            <p className="profile-name">
-              {user.display_name || user.first_name}
-              {user.is_premium && <span className="premium-badge">⭐ Premium</span>}
-            </p>
+            <div className="profile-name-row">
+              <p className="profile-name">
+                {user.display_name || user.first_name}
+                {user.is_premium && <span className="premium-badge">⭐ Premium</span>}
+              </p>
+              <button
+                type="button"
+                className="icon-button"
+                onClick={() => setDonateOpen(true)}
+                title="Поддержать автора"
+              >
+                🪙
+              </button>
+            </div>
             <button type="button" className="link-button" onClick={() => setEditing(true)}>
               Изменить имя
             </button>
@@ -100,6 +200,8 @@ function ProfileCard({ user, setUser }) {
 
       {error && <p className="error">{error}</p>}
       <p className="hint">Аватарка берётся из твоего профиля в Telegram — поменяй её там, и она обновится и здесь.</p>
+
+      {donateOpen && <DonateFlow onClose={() => setDonateOpen(false)} onDonated={handleDonated} />}
     </div>
   );
 }
@@ -131,16 +233,19 @@ function FriendRow({ friend, rank, onEncourage, encouraged, limitReached }) {
   return (
     <li className="friend-row">
       <span className="friend-rank">{rank}</span>
-      {!avatarFailed ? (
-        <img
-          className="avatar avatar-sm"
-          src={`${API_URL}/avatar/${friend.id}`}
-          alt=""
-          onError={() => setAvatarFailed(true)}
-        />
-      ) : (
-        <div className="avatar avatar-sm avatar-placeholder">{(friend.name || '?')[0]?.toUpperCase()}</div>
-      )}
+      <div className="avatar-wrap">
+        {!avatarFailed ? (
+          <img
+            className="avatar avatar-sm"
+            src={`${API_URL}/avatar/${friend.id}`}
+            alt=""
+            onError={() => setAvatarFailed(true)}
+          />
+        ) : (
+          <div className="avatar avatar-sm avatar-placeholder">{(friend.name || '?')[0]?.toUpperCase()}</div>
+        )}
+        {friend.is_premium && <span className="avatar-star avatar-star-sm">⭐</span>}
+      </div>
       <div className="friend-info">
         <p className="friend-name">{friend.name}</p>
         <p className="hint">

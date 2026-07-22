@@ -33,4 +33,5 @@ export const api = {
   updateProfile: (updates) => request('/api/auth/profile', { method: 'PATCH', body: JSON.stringify(updates) }),
   getFriends: () => request('/api/friends'),
   encourageFriend: (friendId) => request(`/api/friends/${friendId}/encourage`, { method: 'POST' }),
+  createDonation: (amount) => request('/api/donate', { method: 'POST', body: JSON.stringify({ amount }) }),
 };

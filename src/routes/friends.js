@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db/pool');
 const bot = require('../bot/bot');
+const { isEffectivelyPremium } = require('../premium');
 
 const DAILY_ENCOURAGE_LIMIT = 3; // free-тариф — см. free-premium-split, безлимит будет с подпиской
 
@@ -22,7 +23,7 @@ router.get('/', async (req, res) => {
     if (!userId) return res.status(404).json({ error: 'Юзер не найден' });
 
     const { rows } = await pool.query(
-      `SELECT u.id, u.display_name, u.first_name, u.hidden_profile, h.started_at,
+      `SELECT u.id, u.display_name, u.first_name, u.hidden_profile, u.is_premium, u.premium_expires_at, h.started_at,
               (SELECT relapsed_at FROM relapses WHERE habit_id = h.id ORDER BY relapsed_at DESC LIMIT 1) AS last_relapse_at
        FROM friendships f
        JOIN users u ON u.id = f.friend_id
@@ -37,6 +38,7 @@ router.get('/', async (req, res) => {
         id: r.id,
         name: r.display_name || r.first_name,
         hidden: r.hidden_profile,
+        is_premium: isEffectivelyPremium(r),
         sober_days: !r.hidden_profile && r.started_at ? soberDays(r.started_at, r.last_relapse_at) : null,
       }))
       .sort((a, b) => (b.sober_days ?? -1) - (a.sober_days ?? -1));

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const pool = require('../db/pool');
+const { withEffectivePremium } = require('../premium');
 
 // Вызывается один раз при открытии мини-аппа — сохраняем юзера, если его ещё нет.
 // display_name не трогаем при повторном входе — юзер мог поменять его вручную.
@@ -15,7 +16,7 @@ router.post('/init', async (req, res) => {
        RETURNING *`,
       [id, first_name, username]
     );
-    res.json(result.rows[0]);
+    res.json(withEffectivePremium(result.rows[0]));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Ошибка сервера' });
@@ -43,7 +44,7 @@ router.patch('/profile', async (req, res) => {
 
     if (!result.rows[0]) return res.status(404).json({ error: 'Юзер не найден' });
 
-    res.json(result.rows[0]);
+    res.json(withEffectivePremium(result.rows[0]));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Ошибка сервера' });

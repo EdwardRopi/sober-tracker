@@ -88,11 +88,17 @@ bot.on('successful_payment', async (msg) => {
         telegramId,
         payment.total_amount,
       ]);
+
+      // Донат даёт premium на ~месяц — звёздочка на аватарке и снятие free-лимитов
+      await pool.query(
+        `UPDATE users SET is_premium = true, premium_expires_at = NOW() + INTERVAL '31 days' WHERE id = $1`,
+        [userId]
+      );
     }
 
     await bot.sendMessage(
       msg.chat.id,
-      `Спасибо огромное за поддержку — ${payment.total_amount} ⭐! Это реально помогает проекту жить. 💜`
+      `Спасибо огромное за поддержку — ${payment.total_amount} ⭐! Premium на месяц уже активен. 💜`
     );
   } catch (err) {
     console.error('Ошибка обработки successful_payment:', err);

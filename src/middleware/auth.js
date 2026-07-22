@@ -1,5 +1,6 @@
 const { validateInitData } = require('../utils/validateInitData');
 const pool = require('../db/pool');
+const { isEffectivelyPremium } = require('../premium');
 
 /**
  * Middleware — вешаем на все эндпоинты, куда должен приходить только
@@ -22,8 +23,11 @@ async function authMiddleware(req, res, next) {
   req.telegramUser = user; // дальше в роутах доступен req.telegramUser.id и т.д.
 
   try {
-    const { rows } = await pool.query('SELECT is_premium FROM users WHERE telegram_id = $1', [user.id]);
-    req.isPremium = rows[0]?.is_premium || false;
+    const { rows } = await pool.query(
+      'SELECT is_premium, premium_expires_at FROM users WHERE telegram_id = $1',
+      [user.id]
+    );
+    req.isPremium = rows[0] ? isEffectivelyPremium(rows[0]) : false;
   } catch (err) {
     req.isPremium = false;
   }
