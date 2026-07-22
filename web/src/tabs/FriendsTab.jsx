@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api, API_URL } from '../api';
+import { haptic } from '../haptic';
+import Spinner from '../Spinner';
 
 const BOT_USERNAME = 'i_am_sbr_bot';
 
@@ -144,8 +146,10 @@ function Leaderboard() {
     try {
       await api.encourageFriend(friendId);
       setEncouragedIds((prev) => ({ ...prev, [friendId]: true }));
+      haptic('success');
     } catch (err) {
       if (err.message.includes('Лимит')) setLimitReached(true);
+      haptic('error');
       setError(err.message);
     }
   }
@@ -155,7 +159,7 @@ function Leaderboard() {
       <h2>Друзья</h2>
 
       {loading ? (
-        <p className="hint">Загрузка...</p>
+        <Spinner />
       ) : friends.length === 0 ? (
         <p className="hint">Пока никого нет — пригласи первого друга.</p>
       ) : (

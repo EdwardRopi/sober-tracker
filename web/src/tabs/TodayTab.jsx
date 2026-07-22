@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api';
+import { haptic } from '../haptic';
+import Spinner from '../Spinner';
 
 export default function TodayTab() {
   const [promise, setPromise] = useState(null);
@@ -27,6 +29,7 @@ export default function TodayTab() {
       const entry = await api.addJournalEntry('promise', promiseDraft.trim());
       setPromise(entry);
       setPromiseDraft('');
+      haptic('success');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -43,6 +46,7 @@ export default function TodayTab() {
       await api.addJournalEntry('dump', dump.trim());
       setDump('');
       setDumpSaved(true);
+      haptic('success');
       setTimeout(() => setDumpSaved(false), 4000);
     } catch (err) {
       setError(err.message);
@@ -51,7 +55,13 @@ export default function TodayTab() {
     }
   }
 
-  if (loading) return <div className="tab-screen">Загрузка...</div>;
+  if (loading) {
+    return (
+      <div className="tab-screen">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <div className="tab-screen today-tab">

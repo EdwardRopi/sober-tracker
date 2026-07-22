@@ -18,6 +18,43 @@
   justify-content: center;
   padding: 32px 20px;
   box-sizing: border-box;
+  animation: tabFadeIn 0.28s ease;
+}
+
+@keyframes tabFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Spinner */
+
+.spinner-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid var(--surface-2);
+  border-top-color: var(--accent);
+  box-shadow: 0 0 14px var(--accent-glow);
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Bottom nav */
@@ -79,6 +116,33 @@
 
 .bottom-nav-item.active .bottom-nav-label {
   text-shadow: 0 0 10px var(--accent-glow);
+}
+
+/* Onboarding */
+
+.onboarding {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+}
+
+.onboarding-icon {
+  font-size: 40px;
+  margin-bottom: 4px;
+  filter: drop-shadow(0 0 16px var(--accent-glow));
+}
+
+.onboarding-subtitle {
+  margin-bottom: 8px;
+}
+
+.onboarding .habit-form {
+  width: 100%;
+  text-align: left;
 }
 
 /* Forms */
@@ -361,6 +425,74 @@ button:disabled {
 
 .badge-earned .badge-label {
   color: var(--text);
+}
+
+/* Badge celebration popup */
+
+.badge-celebrate-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 8, 10, 0.72);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  animation: overlayFadeIn 0.2s ease;
+}
+
+@keyframes overlayFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.badge-celebrate-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 20px;
+  padding: 32px 28px;
+  box-shadow: 0 0 40px var(--accent-glow);
+  max-width: 280px;
+  text-align: center;
+  animation: badgePopIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes badgePopIn {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.badge-celebrate-icon {
+  font-size: 56px;
+  filter: drop-shadow(0 0 20px var(--accent-glow));
+  margin-bottom: 4px;
+}
+
+.badge-celebrate-title {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+
+.badge-celebrate-label {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 10px;
 }
 
 .confirm {

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from './api';
 import BottomNav from './BottomNav';
+import Spinner from './Spinner';
 import ProgressTab from './tabs/ProgressTab';
 import TodayTab from './tabs/TodayTab';
 import FriendsTab from './tabs/FriendsTab';
@@ -41,7 +42,13 @@ export default function App() {
     load();
   }, []);
 
-  if (loading) return <div className="tab-screen">Загрузка...</div>;
+  if (loading) {
+    return (
+      <div className="tab-screen">
+        <Spinner label="Загрузка..." />
+      </div>
+    );
+  }
 
   if (error) {
     return (

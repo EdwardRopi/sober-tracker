@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { api } from '../api';
+import { haptic } from '../haptic';
 
 const HABIT_TYPES = [
   { value: 'alcohol', label: 'Алкоголь' },
@@ -78,41 +79,53 @@ function HabitForm({ onCreated }) {
   }
 
   return (
-    <form className="habit-form" onSubmit={handleSubmit}>
-      <h2>Начать отслеживать привычку</h2>
+    <div className="onboarding">
+      <div className="onboarding-icon">🌱</div>
+      <h2>Начни свой путь</h2>
+      <p className="hint onboarding-subtitle">
+        Выбери, от чего отказываешься, и дату, с которой начинаешь отсчёт — дальше мы всё посчитаем сами.
+      </p>
 
-      <label>
-        Привычка
-        <select value={habitType} onChange={(e) => setHabitType(e.target.value)}>
-          {HABIT_TYPES.map((t) => (
-            <option key={t.value} value={t.value}>
-              {t.label}
-            </option>
-          ))}
-        </select>
-      </label>
+      <form className="habit-form" onSubmit={handleSubmit}>
+        <label>
+          Привычка
+          <select value={habitType} onChange={(e) => setHabitType(e.target.value)}>
+            {HABIT_TYPES.map((t) => (
+              <option key={t.value} value={t.value}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+        </label>
 
-      <label>
-        Отсчёт трезвости с
-        <input type="datetime-local" value={startedAt} onChange={(e) => setStartedAt(e.target.value)} required />
-      </label>
+        <label>
+          Отсчёт трезвости с
+          <input type="datetime-local" value={startedAt} onChange={(e) => setStartedAt(e.target.value)} required />
+        </label>
 
-      <label>
-        Сколько тратил в день (₽, необязательно)
-        <input type="number" min="0" step="0.01" value={dailyCost} onChange={(e) => setDailyCost(e.target.value)} />
-      </label>
+        <label>
+          Сколько тратил в день (₽, необязательно)
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            value={dailyCost}
+            onChange={(e) => setDailyCost(e.target.value)}
+          />
+        </label>
 
-      <label>
-        Почему я бросаю (необязательно)
-        <textarea value={reasonText} onChange={(e) => setReasonText(e.target.value)} rows={3} />
-      </label>
+        <label>
+          Почему я бросаю (необязательно)
+          <textarea value={reasonText} onChange={(e) => setReasonText(e.target.value)} rows={3} />
+        </label>
 
-      {error && <p className="error">{error}</p>}
+        {error && <p className="error">{error}</p>}
 
-      <button type="submit" className="primary" disabled={submitting}>
-        {submitting ? 'Сохраняю...' : 'Начать'}
-      </button>
-    </form>
+        <button type="submit" className="primary" disabled={submitting}>
+          {submitting ? 'Сохраняю...' : 'Начать'}
+        </button>
+      </form>
+    </div>
   );
 }
 
@@ -142,6 +155,50 @@ function BadgeStrip({ badges }) {
   );
 }
 
+function BadgeCelebration({ badge, onDismiss }) {
+  useEffect(() => {
+    if (!badge) return;
+    haptic('success');
+    const timer = setTimeout(onDismiss, 4000);
+    return () => clearTimeout(timer);
+  }, [badge, onDismiss]);
+
+  if (!badge) return null;
+
+  return (
+    <div className="badge-celebrate-overlay" onClick={onDismiss}>
+      <div className="badge-celebrate-card">
+        <div className="badge-celebrate-icon">{badge.icon}</div>
+        <p className="badge-celebrate-title">Новый бейдж!</p>
+        <p className="badge-celebrate-label">{badge.label}</p>
+        <button type="button" className="primary" onClick={onDismiss}>
+          Класс!
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Следит за habit.badges и ловит момент, когда какой-то бейдж переходит в earned:true
+function useNewlyEarnedBadge(badges) {
+  const prevRef = useRef(null);
+  const [celebrate, setCelebrate] = useState(null);
+
+  useEffect(() => {
+    if (!badges) return;
+    const prev = prevRef.current;
+
+    if (prev) {
+      const newlyEarned = badges.find((b) => b.earned && !prev.find((p) => p.key === b.key)?.earned);
+      if (newlyEarned) setCelebrate(newlyEarned);
+    }
+
+    prevRef.current = badges;
+  }, [badges]);
+
+  return [celebrate, () => setCelebrate(null)];
+}
+
 function Counter({ habit, onRelapse, onUpdateHabit }) {
   const [breakdown, setBreakdown] = useState(() => breakdownSince(habit.sober_since));
   const [confirming, setConfirming] = useState(false);
@@ -152,6 +209,7 @@ function Counter({ habit, onRelapse, onUpdateHabit }) {
   const [editingType, setEditingType] = useState(false);
   const [typeDraft, setTypeDraft] = useState(habit.habit_type);
   const [savingType, setSavingType] = useState(false);
+  const [celebrateBadge, dismissCelebration] = useNewlyEarnedBadge(habit.badges);
 
   useEffect(() => {
     const id = setInterval(() => setBreakdown(breakdownSince(habit.sober_since)), 1000);
@@ -160,6 +218,7 @@ function Counter({ habit, onRelapse, onUpdateHabit }) {
 
   async function handleRelapse() {
     setBusy(true);
+    haptic('warning');
     try {
       const { habit: updated } = await api.relapse(habit.id);
       onRelapse(updated);
@@ -172,6 +231,7 @@ function Counter({ habit, onRelapse, onUpdateHabit }) {
   async function handleDateSave(e) {
     e.preventDefault();
     setSavingDate(true);
+    haptic('light');
     try {
       const updated = await api.updateHabit(habit.id, { started_at: new Date(dateDraft).toISOString() });
       onUpdateHabit(updated);
@@ -184,6 +244,7 @@ function Counter({ habit, onRelapse, onUpdateHabit }) {
   async function handleTypeSave(e) {
     e.preventDefault();
     setSavingType(true);
+    haptic('light');
     try {
       const updated = await api.updateHabit(habit.id, { habit_type: typeDraft });
       onUpdateHabit(updated);
@@ -303,6 +364,8 @@ function Counter({ habit, onRelapse, onUpdateHabit }) {
           Я сорвался
         </button>
       )}
+
+      <BadgeCelebration badge={celebrateBadge} onDismiss={dismissCelebration} />
     </div>
   );
 }
