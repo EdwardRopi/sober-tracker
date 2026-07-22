@@ -227,7 +227,7 @@ function Counter({ habit, onRelapse, onUpdateHabit, user }) {
 
   async function handleRelapse() {
     setBusy(true);
-    haptic('warning');
+    haptic('light');
     try {
       const { habit: updated } = await api.relapse(habit.id);
       onRelapse(updated);
@@ -377,19 +377,20 @@ function Counter({ habit, onRelapse, onUpdateHabit, user }) {
 
       {confirming ? (
         <div className="confirm">
-          <p>Точно записать срыв?</p>
+          <p>Случилось — бывает. Главное, что ты здесь и начинаешь снова.</p>
+          <p className="hint">Это видишь только ты — друзьям мы ничего не показываем.</p>
           <div className="confirm-buttons">
-            <button className="danger" onClick={handleRelapse} disabled={busy}>
-              {busy ? 'Записываю...' : 'Да, сорвался'}
+            <button className="primary" onClick={handleRelapse} disabled={busy}>
+              {busy ? 'Начинаю...' : 'Да, начинаю заново'}
             </button>
             <button onClick={() => setConfirming(false)} disabled={busy}>
-              Отмена
+              Ещё держусь
             </button>
           </div>
         </div>
       ) : (
-        <button className="danger" onClick={() => setConfirming(true)}>
-          Я сорвался
+        <button className="secondary" onClick={() => setConfirming(true)}>
+          Хочу начать по новой
         </button>
       )}
 
