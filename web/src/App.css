@@ -23,11 +23,21 @@
 /* Bottom nav */
 
 .bottom-nav {
+  position: relative;
   display: flex;
   flex-shrink: 0;
-  border-top: 1px solid var(--border);
   background: var(--surface);
   padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.bottom-nav::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 8%;
+  right: 8%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent-glow), transparent);
 }
 
 .bottom-nav-item {
@@ -36,12 +46,13 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 10px 4px 8px;
+  padding: 9px 4px 8px;
   background: none;
   border: none;
   color: var(--text-dim);
   font-size: 11px;
   cursor: pointer;
+  transition: color 0.25s;
 }
 
 .bottom-nav-item.active {
@@ -49,8 +60,25 @@
 }
 
 .bottom-nav-icon {
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.25s ease;
+}
+
+.bottom-nav-item.active .bottom-nav-icon {
+  background: var(--accent-dim);
+  box-shadow: 0 0 14px var(--accent-glow), inset 0 0 6px rgba(139, 143, 232, 0.3);
+  transform: translateY(-1px) scale(1.06);
+}
+
+.bottom-nav-item.active .bottom-nav-label {
+  text-shadow: 0 0 10px var(--accent-glow);
 }
 
 /* Forms */
@@ -98,7 +126,14 @@ button.primary {
   font-weight: 600;
   cursor: pointer;
   background: var(--accent);
-  color: #06281c;
+  color: #1a1a2e;
+  box-shadow: 0 0 18px var(--accent-glow);
+  transition: box-shadow 0.2s, transform 0.15s;
+}
+
+button.primary:active {
+  transform: scale(0.97);
+  box-shadow: 0 0 10px var(--accent-glow);
 }
 
 button.danger {
@@ -110,11 +145,19 @@ button.danger {
   cursor: pointer;
   background: var(--danger);
   color: #fff;
+  box-shadow: 0 0 18px rgba(239, 68, 68, 0.4);
+  transition: box-shadow 0.2s, transform 0.15s;
+}
+
+button.danger:active {
+  transform: scale(0.97);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
 }
 
 button:disabled {
   opacity: 0.5;
   cursor: default;
+  box-shadow: none;
 }
 
 /* Progress tab / counter */
@@ -185,6 +228,7 @@ button:disabled {
   position: absolute;
   border-radius: 50%;
   background: var(--bubble-bg);
+  border: 1px solid rgba(94, 234, 212, 0.4);
   box-shadow: var(--bubble-glow);
   color: var(--bubble-text);
   display: flex;
@@ -380,6 +424,7 @@ button:disabled {
   font-size: 11px;
   font-weight: 700;
   color: #f5c451;
+  text-shadow: 0 0 8px rgba(245, 196, 81, 0.6);
   vertical-align: middle;
 }
 
