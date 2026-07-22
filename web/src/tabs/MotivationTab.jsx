@@ -1,12 +1,6 @@
 import { useState } from 'react';
 import { quoteOfTheDay, randomQuote } from '../quotes';
-
-// Атмосферные градиенты вместо фотографий — океан/побережье в стиле I Am Sober
-const SCENES = [
-  'linear-gradient(160deg, #3ac6d9 0%, #1a92a8 35%, #eaf3ef 72%, #f4ddbb 100%)',
-  'linear-gradient(160deg, #0c2f33 0%, #145b64 38%, #6fa39f 72%, #d7e6df 100%)',
-  'linear-gradient(160deg, #24405a 0%, #3e6478 38%, #7c8567 70%, #cf9f66 100%)',
-];
+import SCENES from '../scenes';
 
 function dayOfYear() {
   const start = new Date(new Date().getFullYear(), 0, 0);
@@ -24,7 +18,7 @@ export default function MotivationTab() {
 
   function handleAnother() {
     setQuote(randomQuote());
-    setSceneIdx((i) => i + 1);
+    setSceneIdx((i) => i + 1 + Math.floor(Math.random() * 7));
     setIsDaily(false);
   }
 
