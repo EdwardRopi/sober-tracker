@@ -5,6 +5,7 @@ const { authMiddleware } = require('./middleware/auth');
 const authRoutes = require('./routes/auth');
 const habitsRoutes = require('./routes/habits');
 const journalRoutes = require('./routes/journal');
+const friendsRoutes = require('./routes/friends');
 const avatarRoutes = require('./routes/avatar');
 require('./bot/bot');
 const { scheduleCheckins } = require('./bot/checkin');
@@ -24,6 +25,7 @@ app.use('/api', authMiddleware);
 app.use('/api/auth', authRoutes);
 app.use('/api/habits', habitsRoutes);
 app.use('/api/journal', journalRoutes);
+app.use('/api/friends', friendsRoutes);
 
 scheduleCheckins();
 

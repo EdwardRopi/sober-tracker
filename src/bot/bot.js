@@ -8,9 +8,51 @@ function randomQuote() {
   return quotes[Math.floor(Math.random() * quotes.length)];
 }
 
-bot.onText(/\/start/, (msg) => {
+// Deep-link приглашение друга — Telegram шлёт "/start inv<id>", если перешли по ссылке
+// вида t.me/<bot>?start=inv123. Заводим юзера (если он новый) и делаем дружбу симметричной.
+async function handleInvitePayload(payload, fromUser) {
+  if (!payload || !payload.startsWith('inv')) return;
+
+  const inviterId = parseInt(payload.slice(3), 10);
+  if (Number.isNaN(inviterId)) return;
+
+  const { rows: userRows } = await pool.query(
+    `INSERT INTO users (telegram_id, first_name, username, display_name)
+     VALUES ($1, $2, $3, $2)
+     ON CONFLICT (telegram_id) DO UPDATE SET first_name = $2, username = $3
+     RETURNING *`,
+    [fromUser.id, fromUser.first_name, fromUser.username]
+  );
+  const newUserId = userRows[0].id;
+
+  if (newUserId === inviterId) return;
+
+  const { rows: inviterRows } = await pool.query('SELECT id FROM users WHERE id = $1', [inviterId]);
+  if (!inviterRows[0]) return;
+
+  await pool.query(
+    `INSERT INTO friendships (user_id, friend_id) VALUES ($1, $2), ($2, $1)
+     ON CONFLICT (user_id, friend_id) DO NOTHING`,
+    [inviterId, newUserId]
+  );
+
+  return true;
+}
+
+bot.onText(/\/start(?:\s+(.+))?/, async (msg, match) => {
+  const chatId = msg.chat.id;
+
+  try {
+    const becameFriends = await handleInvitePayload(match[1], msg.from);
+    if (becameFriends) {
+      await bot.sendMessage(chatId, 'Вы теперь друзья в Sober Tracker — поддерживайте друг друга! 💪');
+    }
+  } catch (err) {
+    console.error('Ошибка обработки приглашения:', err);
+  }
+
   bot.sendMessage(
-    msg.chat.id,
+    chatId,
     'Привет! Я помогу трекать трезвость и не сорваться. Открой мини-апп, чтобы начать:',
     {
       reply_markup: {

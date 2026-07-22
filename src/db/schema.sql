@@ -41,3 +41,20 @@ CREATE TABLE IF NOT EXISTS journal_entries (
   text TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT NOW()
 );
+
+-- Друзья — заполняется по deep-link приглашению, симметрично (пара строк на дружбу)
+CREATE TABLE IF NOT EXISTS friendships (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  friend_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE (user_id, friend_id)
+);
+
+-- Кнопка "подбадривание" — считаем сюда, чтобы ограничивать free-юзеров 3 в день
+CREATE TABLE IF NOT EXISTS encouragements (
+  id SERIAL PRIMARY KEY,
+  from_user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  to_user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  created_at TIMESTAMP DEFAULT NOW()
+);

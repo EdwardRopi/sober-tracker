@@ -30,4 +30,6 @@ export const api = {
     request('/api/journal', { method: 'POST', body: JSON.stringify({ entry_type: entryType, text }) }),
   updateProfile: (displayName) =>
     request('/api/auth/profile', { method: 'PATCH', body: JSON.stringify({ display_name: displayName }) }),
+  getFriends: () => request('/api/friends'),
+  encourageFriend: (friendId) => request(`/api/friends/${friendId}/encourage`, { method: 'POST' }),
 };

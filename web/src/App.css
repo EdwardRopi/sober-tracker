@@ -337,6 +337,49 @@ button:disabled {
   font-weight: 600;
 }
 
+.friends-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.friend-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.friend-rank {
+  width: 20px;
+  flex-shrink: 0;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.avatar-sm {
+  width: 38px;
+  height: 38px;
+  font-size: 15px;
+}
+
+.friend-info {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+}
+
+.friend-name {
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .link-button {
   background: none;
   border: none;
