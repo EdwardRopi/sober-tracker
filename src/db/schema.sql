@@ -5,11 +5,13 @@ CREATE TABLE IF NOT EXISTS users (
   first_name TEXT,
   username TEXT,
   display_name TEXT,  -- имя, которое юзер видит у друзей — можно поменять, иначе = first_name
+  is_premium BOOLEAN NOT NULL DEFAULT FALSE,  -- пока выставляется вручную (см. npm run grant-premium), оплата будет позже
   created_at TIMESTAMP DEFAULT NOW()
 );
 
--- На случай если таблица уже существовала до добавления этой колонки
+-- На случай если таблица уже существовала до добавления этих колонок
 ALTER TABLE users ADD COLUMN IF NOT EXISTS display_name TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS is_premium BOOLEAN NOT NULL DEFAULT FALSE;
 -- Аватарка теперь не хранится — отдаётся живьём через /avatar/:userId (Bot API), см. src/routes/avatar.js
 ALTER TABLE users DROP COLUMN IF EXISTS avatar_url;
 

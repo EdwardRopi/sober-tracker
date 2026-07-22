@@ -54,7 +54,10 @@ function ProfileCard({ user, setUser }) {
           </form>
         ) : (
           <div className="profile-info">
-            <p className="profile-name">{user.display_name || user.first_name}</p>
+            <p className="profile-name">
+              {user.display_name || user.first_name}
+              {user.is_premium && <span className="premium-badge">⭐ Premium</span>}
+            </p>
             <button type="button" className="link-button" onClick={() => setEditing(true)}>
               Изменить имя
             </button>

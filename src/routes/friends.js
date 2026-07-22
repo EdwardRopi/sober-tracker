@@ -62,14 +62,19 @@ router.post('/:friendId/encourage', async (req, res) => {
     );
     if (!friendRows[0]) return res.status(404).json({ error: 'Это не твой друг' });
 
-    const { rows: countRows } = await pool.query(
-      `SELECT COUNT(*) FROM encouragements WHERE from_user_id = $1 AND created_at::date = CURRENT_DATE`,
-      [userId]
-    );
-    const sentToday = Number(countRows[0].count);
+    let sentToday = 0;
+    if (!req.isPremium) {
+      const { rows: countRows } = await pool.query(
+        `SELECT COUNT(*) FROM encouragements WHERE from_user_id = $1 AND created_at::date = CURRENT_DATE`,
+        [userId]
+      );
+      sentToday = Number(countRows[0].count);
 
-    if (sentToday >= DAILY_ENCOURAGE_LIMIT) {
-      return res.status(429).json({ error: 'Лимит подбадриваний на сегодня закончился', remaining_today: 0 });
+      if (sentToday >= DAILY_ENCOURAGE_LIMIT) {
+        return res
+          .status(429)
+          .json({ error: 'Лимит подбадриваний на сегодня закончился — с Premium безлимит', remaining_today: 0 });
+      }
     }
 
     await pool.query('INSERT INTO encouragements (from_user_id, to_user_id) VALUES ($1, $2)', [
@@ -84,7 +89,7 @@ router.post('/:friendId/encourage', async (req, res) => {
       .sendMessage(friendRows[0].telegram_id, `${myName} подбадривает тебя: держись, ты справляешься! 💪`)
       .catch((err) => console.error('Не удалось отправить подбадривание:', err.message));
 
-    res.status(201).json({ remaining_today: DAILY_ENCOURAGE_LIMIT - sentToday - 1 });
+    res.status(201).json({ remaining_today: req.isPremium ? null : DAILY_ENCOURAGE_LIMIT - sentToday - 1 });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Ошибка сервера' });

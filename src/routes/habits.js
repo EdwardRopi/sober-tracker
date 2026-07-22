@@ -45,8 +45,7 @@ router.get('/', async (req, res) => {
 });
 
 // POST /api/habits — создать привычку
-// Пока разрешена только одна привычка на юзера — несколько одновременно
-// доступно по подписке (см. week 7 в роадмапе), но проверка подписки ещё не готова
+// Free — одна привычка одновременно, Premium — несколько (см. free-premium-split)
 router.post('/', async (req, res) => {
   try {
     const { habit_type, started_at, daily_cost, reason_text, reason_photo_url } = req.body;
@@ -58,9 +57,11 @@ router.post('/', async (req, res) => {
     const userId = await getUserId(req.telegramUser.id);
     if (!userId) return res.status(404).json({ error: 'Юзер не найден' });
 
-    const { rows: existing } = await pool.query('SELECT id FROM habits WHERE user_id = $1', [userId]);
-    if (existing.length > 0) {
-      return res.status(409).json({ error: 'Уже есть активная привычка' });
+    if (!req.isPremium) {
+      const { rows: existing } = await pool.query('SELECT id FROM habits WHERE user_id = $1', [userId]);
+      if (existing.length > 0) {
+        return res.status(409).json({ error: 'На free-тарифе доступна только одна привычка — с Premium можно несколько' });
+      }
     }
 
     const { rows } = await pool.query(
