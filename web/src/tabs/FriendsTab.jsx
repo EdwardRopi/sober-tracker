@@ -3,6 +3,13 @@ import { api, API_URL } from '../api';
 import { haptic } from '../haptic';
 import Spinner from '../Spinner';
 import { BOT_USERNAME } from '../constants';
+import { getStoredPreference, setThemePreference } from '../theme';
+
+const THEME_OPTIONS = [
+  { value: 'dark', label: '🌙 Тёмная' },
+  { value: 'light', label: '☀️ Светлая' },
+  { value: 'auto', label: '📱 Как на устройстве' },
+];
 
 const DONATE_AMOUNTS = [50, 100, 250, 500];
 
@@ -94,6 +101,14 @@ function ProfileCard({ user, setUser }) {
   const [avatarFailed, setAvatarFailed] = useState(false);
   const [savingPrivacy, setSavingPrivacy] = useState(false);
   const [donateOpen, setDonateOpen] = useState(false);
+  const [theme, setTheme] = useState(getStoredPreference);
+
+  function handleThemeChange(next) {
+    if (next === theme) return;
+    setTheme(next);
+    setThemePreference(next);
+    haptic('selection');
+  }
 
   async function handleSave(e) {
     e.preventDefault();
@@ -175,6 +190,22 @@ function ProfileCard({ user, setUser }) {
             </button>
           </div>
         )}
+      </div>
+
+      <div className="theme-row">
+        <span>Тема оформления</span>
+        <div className="theme-picker">
+          {THEME_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              className={`theme-option ${theme === opt.value ? 'active' : ''}`}
+              onClick={() => handleThemeChange(opt.value)}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <label className="switch-row">
